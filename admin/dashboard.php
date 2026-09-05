@@ -1,11 +1,9 @@
 <?php
-// admin/dashboard.php
 require_once 'auth.php';
 check_auth();
 
 require_once '../includes/db.php';
 
-// Fetch stats counts
 try {
     $blog_count = $pdo->query("SELECT COUNT(*) FROM blogs")->fetchColumn();
     $contact_count = $pdo->query("SELECT COUNT(*) FROM submissions WHERE type = 'contact' AND status = 'unread'")->fetchColumn();
@@ -13,16 +11,13 @@ try {
     $pledge_count = $pdo->query("SELECT COUNT(*) FROM submissions WHERE type = 'pledge' AND status = 'unread'")->fetchColumn();
     $member_reg_count = $pdo->query("SELECT COUNT(*) FROM submissions WHERE type = 'member_registration' AND status = 'unread'")->fetchColumn();
     
-    // Fetch 5 latest submissions
     $stmt = $pdo->query("SELECT * FROM submissions ORDER BY created_at DESC LIMIT 5");
     $recent_submissions = $stmt->fetchAll();
 
-    // Fetch analytics metrics
     $total_views = $pdo->query("SELECT SUM(views) FROM analytics")->fetchColumn() ?: 0;
     $total_clicks = $pdo->query("SELECT SUM(clicks) FROM analytics")->fetchColumn() ?: 0;
     $total_time = $pdo->query("SELECT SUM(time_spent) FROM analytics")->fetchColumn() ?: 0;
 
-    // Fetch details per page
     $analytics_pages = $pdo->query("SELECT * FROM analytics ORDER BY views DESC")->fetchAll();
 } catch (PDOException $e) {
     $blog_count = 0;
@@ -49,8 +44,7 @@ try {
 <body>
 
     <div class="admin-container">
-        <!-- Sidebar -->
-        <aside class="admin-sidebar">
+                <aside class="admin-sidebar">
             <div class="sidebar-brand">
                 <i class="fa-solid fa-church"></i> Membley SDA Admin
             </div>
@@ -68,8 +62,7 @@ try {
             </div>
         </aside>
 
-        <!-- Main Workspace -->
-        <main class="admin-main">
+                <main class="admin-main">
             <header class="admin-header">
                 <div class="admin-title">Dashboard Overview</div>
                 <div class="admin-user">
@@ -78,8 +71,7 @@ try {
             </header>
 
             <div class="admin-content">
-                <!-- Statistics Row -->
-                <div class="stats-grid">
+                                <div class="stats-grid">
                     <div class="stat-card">
                         <div class="stat-label">Total Blog Posts</div>
                         <div class="stat-val"><?php echo $blog_count; ?></div>
@@ -102,8 +94,7 @@ try {
                     </div>
                 </div>
 
-                <!-- Site Traffic & Analytics Row -->
-                <div class="stats-grid" style="margin-top: 1.5rem;">
+                                <div class="stats-grid" style="margin-top: 1.5rem;">
                     <div class="stat-card" style="border-top: 4px solid var(--accent);">
                         <div class="stat-label">Total Site Views</div>
                         <div class="stat-val"><?php echo number_format($total_views); ?></div>
@@ -128,8 +119,7 @@ try {
                     </div>
                 </div>
 
-                <!-- Recent Submissions Section -->
-                <div class="card-table-wrap">
+                                <div class="card-table-wrap">
                     <div class="card-table-header">
                         <span class="table-title">Recent Submissions</span>
                         <a href="submissions.php" class="admin-btn-outline" style="padding: 0.35rem 0.75rem; font-size: 0.8rem; margin: 0;">View All</a>
@@ -187,8 +177,7 @@ try {
                     </div>
                 </div>
 
-                <!-- Page Analytics Metrics -->
-                <div class="card-table-wrap" style="margin-top: 2rem;">
+                                <div class="card-table-wrap" style="margin-top: 2rem;">
                     <div class="card-table-header">
                         <span class="table-title">Page-level Visitor Analytics</span>
                     </div>

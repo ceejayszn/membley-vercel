@@ -1,11 +1,9 @@
 <?php
-// admin/submissions.php
 require_once 'auth.php';
 check_auth();
 
 require_once '../includes/db.php';
 
-// Human-readable type labels
 $type_labels = [
     'member_registration' => 'Member Reg',
     'pledge'              => 'Pledge',
@@ -17,7 +15,6 @@ $filter_type = isset($_GET['type']) ? $_GET['type'] : '';
 $action = isset($_GET['action']) ? $_GET['action'] : '';
 $id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 
-// 1. PROCESS ACTION (Mark read/resolved)
 if (!empty($action) && $id > 0) {
     $new_status = 'unread';
     if ($action == 'read') $new_status = 'read';
@@ -29,13 +26,10 @@ if (!empty($action) && $id > 0) {
         header('Location: submissions.php' . (!empty($filter_type) ? '?type=' . urlencode($filter_type) : ''));
         exit;
     } catch (PDOException $e) {
-        // Fail silently or handle error
     }
 }
 
-// 2. CSV EXPORT FUNCTIONALITY
 if ($action == 'export') {
-    // Determine export SQL
     $export_sql = "SELECT created_at, type, name, email, phone, subject_message, amount, status FROM submissions";
     $params = [];
     if (!empty($filter_type)) {
@@ -49,29 +43,24 @@ if ($action == 'export') {
         $stmt->execute($params);
         $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        // Set download headers
         $filename = "submissions_" . (!empty($filter_type) ? $filter_type . "_" : "") . date('Ymd_His') . ".csv";
         header('Content-Type: text/csv; charset=utf-8');
         header('Content-Disposition: attachment; filename=' . $filename);
         
         $output = fopen('php://output', 'w');
         
-        // Write column headers
         fputcsv($output, ['Created At', 'Type', 'Name', 'Email', 'Phone', 'Subject/Message/Notes', 'Amount (KES)', 'Status']);
         
-        // Write data rows
         foreach ($rows as $row) {
             fputcsv($output, $row);
         }
         fclose($output);
         exit;
     } catch (PDOException $e) {
-        // Graceful error if export fails
         die("Export failed: " . $e->getMessage());
     }
 }
 
-// 3. FETCH SUBMISSIONS FOR VIEWING
 $sql = "SELECT * FROM submissions";
 $params = [];
 if (!empty($filter_type)) {
@@ -100,8 +89,7 @@ try {
 <body>
 
     <div class="admin-container">
-        <!-- Sidebar -->
-        <aside class="admin-sidebar">
+                <aside class="admin-sidebar">
             <div class="sidebar-brand">
                 <i class="fa-solid fa-church"></i> Membley SDA Admin
             </div>
@@ -119,8 +107,7 @@ try {
             </div>
         </aside>
 
-        <!-- Main Workspace -->
-        <main class="admin-main">
+                <main class="admin-main">
             <header class="admin-header">
                 <div class="admin-title">Form Submissions</div>
                 <div class="admin-user">
@@ -129,10 +116,8 @@ try {
             </header>
 
             <div class="admin-content">
-                <!-- Filters and Actions Toolbar -->
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
-                    <!-- Filter Links -->
-                    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+                                        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
                         <a href="submissions.php" class="admin-btn-outline" style="margin: 0; padding: 0.5rem 0.75rem; font-size: 0.85rem; border-color: <?php echo empty($filter_type) ? 'var(--primary)' : '#cbd5e1'; ?>; background-color: <?php echo empty($filter_type) ? '#f1f5f9' : 'transparent'; ?>;">All</a>
                         <a href="submissions.php?type=member_registration" class="admin-btn-outline" style="margin: 0; padding: 0.5rem 0.75rem; font-size: 0.85rem; border-color: <?php echo ($filter_type == 'member_registration') ? 'var(--primary)' : '#cbd5e1'; ?>; background-color: <?php echo ($filter_type == 'member_registration') ? '#f1f5f9' : 'transparent'; ?>;">Members</a>
                         <a href="submissions.php?type=pledge" class="admin-btn-outline" style="margin: 0; padding: 0.5rem 0.75rem; font-size: 0.85rem; border-color: <?php echo ($filter_type == 'pledge') ? 'var(--primary)' : '#cbd5e1'; ?>; background-color: <?php echo ($filter_type == 'pledge') ? '#f1f5f9' : 'transparent'; ?>;">Pledges</a>
@@ -140,12 +125,10 @@ try {
                         <a href="submissions.php?type=contact" class="admin-btn-outline" style="margin: 0; padding: 0.5rem 0.75rem; font-size: 0.85rem; border-color: <?php echo ($filter_type == 'contact') ? 'var(--primary)' : '#cbd5e1'; ?>; background-color: <?php echo ($filter_type == 'contact') ? '#f1f5f9' : 'transparent'; ?>;">Contacts</a>
                     </div>
                     
-                    <!-- Export Button -->
-                    <a href="submissions.php?action=export<?php echo !empty($filter_type) ? '&type='.$filter_type : ''; ?>" class="admin-btn" style="background-color: var(--success);"><i class="fa-solid fa-file-excel"></i> Export as CSV</a>
+                                        <a href="submissions.php?action=export<?php echo !empty($filter_type) ? '&type='.$filter_type : ''; ?>" class="admin-btn" style="background-color: var(--success);"><i class="fa-solid fa-file-excel"></i> Export as CSV</a>
                 </div>
 
-                <!-- Submissions Table Card -->
-                <div class="card-table-wrap">
+                                <div class="card-table-wrap">
                     <div class="card-table-header">
                         <span class="table-title">
                             <?php 

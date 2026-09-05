@@ -1,5 +1,4 @@
 <?php
-// giving.php
 require_once 'includes/db.php';
 
 $success_msg = '';
@@ -35,7 +34,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 require_once 'includes/header.php';
 ?>
 
-<!-- Banner Section -->
 <section style="background-color: var(--primary-dark); color: white; padding: 3.5rem 0; text-align: center; background-image: linear-gradient(rgba(4,25,40,0.85), rgba(4,25,40,0.85)), url('https://images.unsplash.com/photo-1438232992991-995b7058bbb3?auto=format&fit=crop&q=80&w=1200'); background-size: cover; background-position: center;">
     <div class="container">
         <h1 style="color: white; font-size: 2.5rem; margin-bottom: 0.5rem;">Worship Through Giving</h1>
@@ -43,7 +41,6 @@ require_once 'includes/header.php';
     </div>
 </section>
 
-<!-- Giving Instructions & Pledge Form -->
 <section class="section-padding container">
     
     <?php if (!empty($success_msg)): ?>
@@ -59,10 +56,8 @@ require_once 'includes/header.php';
     <?php endif; ?>
 
     <div class="giving-grid">
-        <!-- Left: Simple M-PESA Instructions & Codes -->
-        <div>
-            <!-- Quick Paybill Card -->
-            <div style="background: linear-gradient(135deg, #1b4332 0%, #2d6a4f 100%); color: #ffffff; border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: var(--shadow-md);">
+                <div>
+                        <div style="background: linear-gradient(135deg, #1b4332 0%, #2d6a4f 100%); color: #ffffff; border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: var(--shadow-md);">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
                     <span style="background: #25d366; color: #041928; font-weight: 800; padding: 0.25rem 0.75rem; border-radius: 50px; font-size: 0.85rem;">
                         <i class="fa-solid fa-mobile-screen-button"></i> M-PESA PAYBILL
@@ -81,8 +76,7 @@ require_once 'includes/header.php';
                 </div>
             </div>
 
-            <!-- Simple 3-Step Guide -->
-            <div style="background: var(--bg-white); border-radius: 12px; padding: 1.5rem; border: 1px solid var(--border-color); margin-bottom: 1.5rem;">
+                        <div style="background: var(--bg-white); border-radius: 12px; padding: 1.5rem; border: 1px solid var(--border-color); margin-bottom: 1.5rem;">
                 <h3 style="color: var(--primary); font-size: 1.2rem; margin-bottom: 1rem;">
                     <i class="fa-solid fa-bolt" style="color: var(--accent);"></i> How to Pay (3 Easy Steps)
                 </h3>
@@ -108,8 +102,7 @@ require_once 'includes/header.php';
                 </div>
             </div>
 
-            <!-- Payment Purpose Codes Cheatsheet -->
-            <div style="background: var(--bg-white); border-radius: 12px; padding: 1.5rem; border: 1px solid var(--border-color); margin-bottom: 1.5rem;">
+                        <div style="background: var(--bg-white); border-radius: 12px; padding: 1.5rem; border: 1px solid var(--border-color); margin-bottom: 1.5rem;">
                 <h3 style="color: var(--primary); font-size: 1.2rem; margin-bottom: 0.5rem;">
                     <i class="fa-solid fa-list" style="color: var(--accent);"></i> Purpose Codes (Use in Account line)
                 </h3>
@@ -167,8 +160,7 @@ require_once 'includes/header.php';
                     </div>
                 </div>
 
-                <!-- Examples -->
-                <div style="margin-top: 1rem; background: #eef6ff; border-left: 4px solid var(--primary-light); padding: 0.75rem 1rem; border-radius: 0 6px 6px 0;">
+                                <div style="margin-top: 1rem; background: #eef6ff; border-left: 4px solid var(--primary-light); padding: 0.75rem 1rem; border-radius: 0 6px 6px 0;">
                     <div style="font-weight: 700; font-size: 0.85rem; color: var(--primary);">Quick Examples:</div>
                     <div style="font-size: 0.85rem; margin-top: 0.2rem;">
                         • <code>2000LCB</code> (2,000 for Local Church Budget)<br>
@@ -177,8 +169,7 @@ require_once 'includes/header.php';
                 </div>
             </div>
 
-            <!-- Bank Info -->
-            <div style="background: var(--bg-white); border-radius: 12px; padding: 1.25rem; border: 1px solid var(--border-color);">
+                        <div style="background: var(--bg-white); border-radius: 12px; padding: 1.25rem; border: 1px solid var(--border-color);">
                 <div style="font-weight: 700; font-size: 0.95rem; color: var(--primary);"><i class="fa-solid fa-building-columns"></i> Cooperative Bank Transfer</div>
                 <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.25rem;">
                     <strong>Account Name:</strong> Membley SDA Church | <strong>Branch:</strong> Ruiru Branch
@@ -186,8 +177,7 @@ require_once 'includes/header.php';
             </div>
         </div>
 
-        <!-- Right: Pledge Form -->
-        <div style="background-color: var(--bg-white); padding: 2rem; border-radius: 12px; box-shadow: var(--shadow-md); border: 1px solid var(--border-color);">
+                <div style="background-color: var(--bg-white); padding: 2rem; border-radius: 12px; box-shadow: var(--shadow-md); border: 1px solid var(--border-color);">
             <h2 style="color: var(--primary); margin-bottom: 0.5rem; font-size: 1.6rem; text-align: center;">Submit a Pledge</h2>
             <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem; text-align: center;">Commit to supporting church projects or tithes.</p>
 

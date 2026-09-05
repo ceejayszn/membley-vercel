@@ -1,5 +1,4 @@
 <?php
-// members.php
 require_once 'includes/db.php';
 
 $success_msg = '';
@@ -22,7 +21,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $error_msg = 'Please fill in all required fields marked with (*).';
     } else {
         try {
-            // Format details into subject_message field
             $details = "Gender: $gender\n"
                      . "Date of Birth: $dob\n"
                      . "Address: $address\n"
@@ -48,7 +46,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 require_once 'includes/header.php';
 ?>
 
-<!-- Banner Section -->
 <section style="background-color: var(--primary-dark); color: white; padding: 4rem 0; text-align: center; background-image: linear-gradient(rgba(4,25,40,0.8), rgba(4,25,40,0.8)), url('https://images.unsplash.com/photo-1438232992991-995b7058bbb3?auto=format&fit=crop&q=80&w=1200'); background-size: cover; background-position: center;">
     <div class="container">
         <h1 style="color: white; font-size: 2.75rem; margin-bottom: 0.5rem;">Church Member Portal</h1>
@@ -56,7 +53,6 @@ require_once 'includes/header.php';
     </div>
 </section>
 
-<!-- Main Form Section -->
 <section class="section-padding container" style="max-width: 800px;">
     
     <?php if (!empty($success_msg)): ?>

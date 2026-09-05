@@ -1,5 +1,4 @@
 <?php
-// admin/members.php — Dedicated Member Registrations Admin Page
 require_once 'auth.php';
 check_auth();
 
@@ -9,7 +8,6 @@ $action = isset($_GET['action']) ? $_GET['action'] : '';
 $id     = isset($_GET['id'])     ? intval($_GET['id']) : 0;
 $msg    = isset($_GET['msg'])    ? $_GET['msg'] : '';
 
-// ── 1. PROCESS STATUS ACTIONS ──────────────────────────────────────────────
 if (!empty($action) && $id > 0) {
     if ($action === 'read' || $action === 'resolve') {
         $new_status = ($action === 'read') ? 'read' : 'resolved';
@@ -30,7 +28,6 @@ if (!empty($action) && $id > 0) {
     }
 }
 
-// ── 2. CSV EXPORT ──────────────────────────────────────────────────────────
 if ($action === 'export') {
     try {
         $stmt = $pdo->query("SELECT created_at, name, email, phone, subject_message, status FROM submissions WHERE type = 'member_registration' ORDER BY created_at DESC");
@@ -46,7 +43,6 @@ if ($action === 'export') {
     } catch (PDOException $e) { die("Export failed: " . $e->getMessage()); }
 }
 
-// ── 3. FETCH STATS ─────────────────────────────────────────────────────────
 $stat_total    = 0;
 $stat_unread   = 0;
 $stat_read     = 0;
@@ -58,7 +54,6 @@ try {
     $stat_resolved = $pdo->query("SELECT COUNT(*) FROM submissions WHERE type='member_registration' AND status='resolved'")->fetchColumn();
 } catch (PDOException $e) {}
 
-// ── 4. FETCH MEMBER REGISTRATIONS ─────────────────────────────────────────
 $filter_status = isset($_GET['status']) ? $_GET['status'] : '';
 $sql    = "SELECT * FROM submissions WHERE type = 'member_registration'";
 $params = [];
@@ -102,8 +97,7 @@ try {
 <body>
 <div class="admin-container">
 
-    <!-- Sidebar -->
-    <aside class="admin-sidebar">
+        <aside class="admin-sidebar">
         <div class="sidebar-brand"><i class="fa-solid fa-church"></i> Membley SDA Admin</div>
         <ul class="sidebar-menu">
             <li><a href="dashboard.php"  class="sidebar-link"><i class="fa-solid fa-gauge"              style="margin-right:0.5rem;"></i> Dashboard</a></li>
@@ -119,8 +113,7 @@ try {
         </div>
     </aside>
 
-    <!-- Main Content -->
-    <main class="admin-main">
+        <main class="admin-main">
         <header class="admin-header">
             <div class="admin-title"><i class="fa-solid fa-users" style="margin-right:0.5rem;color:var(--primary-light);"></i> Member Registrations</div>
             <div class="admin-user">Welcome, <span style="color:var(--primary-light);"><?php echo htmlspecialchars(get_logged_in_user()); ?></span></div>
@@ -134,8 +127,7 @@ try {
                 <div class="flash-danger"><i class="fa-solid fa-trash"></i> Record deleted.</div>
             <?php endif; ?>
 
-            <!-- Stats Mini Cards -->
-            <div class="stats-mini">
+                        <div class="stats-mini">
                 <div class="stat-mini-card">
                     <div class="num"><?php echo $stat_total; ?></div>
                     <div class="lbl">Total Registered</div>
@@ -154,21 +146,17 @@ try {
                 </div>
             </div>
 
-            <!-- Toolbar -->
-            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; margin-bottom:1.5rem;">
-                <!-- Status Filters -->
-                <div class="filter-bar">
+                        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; margin-bottom:1.5rem;">
+                                <div class="filter-bar">
                     <a href="members.php"              class="filter-pill <?php echo empty($filter_status) ? 'active' : ''; ?>">All</a>
                     <a href="members.php?status=unread"   class="filter-pill <?php echo $filter_status==='unread'   ? 'active' : ''; ?>">Pending</a>
                     <a href="members.php?status=read"     class="filter-pill <?php echo $filter_status==='read'     ? 'active' : ''; ?>">Reviewed</a>
                     <a href="members.php?status=resolved" class="filter-pill <?php echo $filter_status==='resolved' ? 'active' : ''; ?>">Processed</a>
                 </div>
-                <!-- Export -->
-                <a href="members.php?action=export" class="admin-btn" style="background-color:var(--success);"><i class="fa-solid fa-file-excel"></i> Export CSV</a>
+                                <a href="members.php?action=export" class="admin-btn" style="background-color:var(--success);"><i class="fa-solid fa-file-excel"></i> Export CSV</a>
             </div>
 
-            <!-- Table -->
-            <div class="card-table-wrap">
+                        <div class="card-table-wrap">
                 <div class="card-table-header">
                     <span class="table-title">Member Registration Forms</span>
                     <span style="font-size:0.8rem;color:#64748b;"><?php echo count($members); ?> record(s)</span>
@@ -189,7 +177,6 @@ try {
                         <?php if (!empty($members)): ?>
                             <?php foreach ($members as $m): ?>
                                 <?php
-                                    // Parse the details from subject_message field
                                     $details_raw = $m['subject_message'] ?? '';
                                     $detail_lines = [];
                                     foreach (explode("\n", $details_raw) as $line) {
@@ -266,8 +253,7 @@ try {
                 </div>
             </div>
 
-        </div><!-- /admin-content -->
-    </main>
+        </div>    </main>
 </div>
 </body>
 </html>

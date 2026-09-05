@@ -1,13 +1,10 @@
 <?php
-// includes/footer.php
 ?>
-    <!-- Footer Section -->
-    <footer class="main-footer">
+        <footer class="main-footer">
         <div class="container">
             <div class="footer-grid">
                 
-                <!-- Col 1: About Brief -->
-                <div class="footer-col">
+                                <div class="footer-col">
                     <h3>Membley SDA Church</h3>
                     <p style="font-size: 0.95rem; color: rgba(255, 255, 255, 0.7); margin-bottom: 1.5rem;">
                         A Bible-believing Christian community located in Membley, Ruiru, dedicated to sharing the everlasting gospel of Jesus Christ in the light of the three angels' messages.
@@ -19,8 +16,7 @@
                     </div>
                 </div>
 
-                <!-- Col 2: Service Times -->
-                <div class="footer-col">
+                                <div class="footer-col">
                     <h3>Worship Services</h3>
                     <ul class="footer-links" style="color: rgba(255, 255, 255, 0.7); font-size: 0.95rem;">
                         <li style="margin-bottom: 0.5rem;"><strong>Sabbath School:</strong> Saturdays at 9:00 AM</li>
@@ -29,8 +25,7 @@
                     </ul>
                 </div>
 
-                <!-- Col 3: Quick Links -->
-                <div class="footer-col">
+                                <div class="footer-col">
                     <h3>Quick Links</h3>
                     <ul class="footer-links">
                         <li><a href="about.php">Our Beliefs</a></li>
@@ -41,8 +36,7 @@
                     </ul>
                 </div>
 
-                <!-- Col 4: Contact info -->
-                <div class="footer-col">
+                                <div class="footer-col">
                     <h3>Get In Touch</h3>
                     <ul class="footer-links" style="color: rgba(255, 255, 255, 0.7); font-size: 0.95rem;">
                         <li style="margin-bottom: 0.5rem;">
@@ -62,29 +56,24 @@
 
             </div>
 
-            <!-- Bottom info -->
-            <div class="footer-bottom">
+                        <div class="footer-bottom">
                 <p>&copy; <?php echo date('Y'); ?> Membley Seventh-day Adventist Church. All Rights Reserved. Prepared for God's Glory.</p>
             </div>
         </div>
     </footer>
 
-    <!-- Main scripts -->
-    <script src="assets/js/main.js"></script>
+        <script src="assets/js/main.js"></script>
 
-    <!-- Lightweight Analytics Tracker -->
-    <script>
+        <script>
     (function() {
         const pagePath = window.location.pathname.split('/').pop() || 'index.php';
         
-        // 1. Record Page View on Load
         fetch('track.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ page: pagePath, type: 'view' })
         }).catch(() => {});
 
-        // 2. Record Click Interactions
         document.addEventListener('click', function(e) {
             if (e.target.closest('a, button, .btn')) {
                 fetch('track.php', {
@@ -95,7 +84,6 @@
             }
         });
 
-        // 3. Record Time Spent (Send updates every 10 seconds of active viewing)
         setInterval(function() {
             if (document.visibilityState === 'visible') {
                 fetch('track.php', {

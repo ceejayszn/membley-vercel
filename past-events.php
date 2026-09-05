@@ -1,9 +1,7 @@
 <?php
-// past-events.php
 require_once 'includes/db.php';
 require_once 'includes/header.php';
 
-// Fetch past events (where current date is > event_date + 2 days)
 $past_events = [];
 try {
     $stmt = $pdo->query("SELECT * FROM events ORDER BY event_date DESC");
@@ -16,11 +14,9 @@ try {
         }
     }
 } catch (PDOException $e) {
-    // Gracefully handle query issue if any
 }
 ?>
 
-<!-- Banner Section -->
 <section style="background-color: var(--primary-dark); color: white; padding: 4rem 0; text-align: center; background-image: linear-gradient(rgba(4,25,40,0.85), rgba(4,25,40,0.85)), url('https://images.unsplash.com/photo-1544427920-c49ccfb85579?auto=format&fit=crop&q=80&w=1200'); background-size: cover; background-position: center;">
     <div class="container">
         <span style="color: var(--accent); font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; font-size: 0.9rem; display: block; margin-bottom: 0.5rem;"><i class="fa-solid fa-box-archive"></i> Church Event Archives</span>
@@ -29,7 +25,6 @@ try {
     </div>
 </section>
 
-<!-- Sub-navigation Bar -->
 <div style="background-color: var(--bg-white); border-bottom: 1px solid var(--border-color); padding: 1rem 0;">
     <div class="container" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
         <div>
@@ -41,7 +36,6 @@ try {
     </div>
 </div>
 
-<!-- Past Events List -->
 <section class="section-padding container">
     <?php if (!empty($past_events)): ?>
         <div style="display: flex; flex-direction: column; gap: 1.75rem;">

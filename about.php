@@ -1,10 +1,8 @@
 <?php
-// about.php
 require_once 'includes/db.php';
 require_once 'includes/header.php';
 ?>
 
-<!-- Banner Section -->
 <section style="background-color: var(--primary-dark); color: white; padding: 4rem 0; text-align: center; background-image: linear-gradient(rgba(4,25,40,0.8), rgba(4,25,40,0.8)), url('https://images.unsplash.com/photo-1438232992991-995b7058bbb3?auto=format&fit=crop&q=80&w=1200'); background-size: cover; background-position: center;">
     <div class="container">
         <h1 style="color: white; font-size: 2.75rem; margin-bottom: 0.5rem;">About Our Church</h1>
@@ -12,7 +10,6 @@ require_once 'includes/header.php';
     </div>
 </section>
 
-<!-- History & Mission -->
 <section class="section-padding container">
     <div class="responsive-grid-about">
         <div>
@@ -49,7 +46,6 @@ require_once 'includes/header.php';
     </div>
 </section>
 
-<!-- Leadership Team -->
 <section style="background-color: var(--bg-white);" class="section-padding">
     <div class="container">
         <div class="section-header">
@@ -58,8 +54,7 @@ require_once 'includes/header.php';
         </div>
         
         <div class="grid-3">
-            <!-- Pastor -->
-            <div class="card" style="text-align: center;">
+                        <div class="card" style="text-align: center;">
                 <div style="height: 250px; background-image: url('https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=400'); background-size: cover; background-position: center;"></div>
                 <div class="card-body">
                     <h3 style="color: var(--primary); margin-bottom: 0.25rem;">Pr. Joseph Mwaniki</h3>
@@ -68,8 +63,7 @@ require_once 'includes/header.php';
                 </div>
             </div>
 
-            <!-- Head Elder -->
-            <div class="card" style="text-align: center;">
+                        <div class="card" style="text-align: center;">
                 <div style="height: 250px; background-image: url('https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=400'); background-size: cover; background-position: center;"></div>
                 <div class="card-body">
                     <h3 style="color: var(--primary); margin-bottom: 0.25rem;">Elder Daniel Mwangi</h3>
@@ -78,8 +72,7 @@ require_once 'includes/header.php';
                 </div>
             </div>
 
-            <!-- Treasurer -->
-            <div class="card" style="text-align: center;">
+                        <div class="card" style="text-align: center;">
                 <div style="height: 250px; background-image: url('https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=400'); background-size: cover; background-position: center;"></div>
                 <div class="card-body">
                     <h3 style="color: var(--primary); margin-bottom: 0.25rem;">Sis. Grace Wambui</h3>

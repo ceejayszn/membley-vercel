@@ -1,5 +1,4 @@
 <?php
-// contact.php
 require_once 'includes/db.php';
 
 $success_msg = '';
@@ -36,7 +35,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 require_once 'includes/header.php';
 ?>
 
-<!-- Banner Section -->
 <section style="background-color: var(--primary-dark); color: white; padding: 4rem 0; text-align: center; background-image: linear-gradient(rgba(4,25,40,0.8), rgba(4,25,40,0.8)), url('https://images.unsplash.com/photo-1544427920-c49ccfb85579?auto=format&fit=crop&q=80&w=1200'); background-size: cover; background-position: center;">
     <div class="container">
         <h1 style="color: white; font-size: 2.75rem; margin-bottom: 0.5rem;">Contact & Prayer Request</h1>
@@ -44,7 +42,6 @@ require_once 'includes/header.php';
     </div>
 </section>
 
-<!-- Main Layout -->
 <section class="section-padding container">
     
     <?php if (!empty($success_msg)): ?>
@@ -60,8 +57,7 @@ require_once 'includes/header.php';
     <?php endif; ?>
 
     <div style="display: grid; grid-template-columns: 1fr; gap: 4rem; align-items: start;">
-        <!-- Left Column: Contact Form -->
-        <div style="background-color: var(--bg-white); padding: 2.5rem; border-radius: 12px; box-shadow: var(--shadow-md); border: 1px solid var(--border-color);">
+                <div style="background-color: var(--bg-white); padding: 2.5rem; border-radius: 12px; box-shadow: var(--shadow-md); border: 1px solid var(--border-color);">
             <h2 style="color: var(--primary); margin-bottom: 1rem; font-size: 1.8rem;"><i class="fa-regular fa-envelope" style="color: var(--accent);"></i> Send Us a Message</h2>
             <p style="font-size: 0.95rem; color: var(--text-muted); margin-bottom: 2rem;">If you have general inquiries, membership questions, or comments, please write to us.</p>
             
@@ -87,11 +83,9 @@ require_once 'includes/header.php';
             </form>
         </div>
 
-        <!-- Right Column: Prayer Requests & Map -->
-        <div style="display: flex; flex-direction: column; gap: 2rem;">
+                <div style="display: flex; flex-direction: column; gap: 2rem;">
             
-            <!-- Prayer Form -->
-            <div style="background-color: var(--bg-white); padding: 2.5rem; border-radius: 12px; box-shadow: var(--shadow-md); border: 1px solid var(--border-color);">
+                        <div style="background-color: var(--bg-white); padding: 2.5rem; border-radius: 12px; box-shadow: var(--shadow-md); border: 1px solid var(--border-color);">
                 <h2 style="color: var(--primary); margin-bottom: 1rem; font-size: 1.8rem;"><i class="fa-solid fa-hands-praying" style="color: var(--accent);"></i> Prayer Request</h2>
                 <p style="font-size: 0.95rem; color: var(--text-muted); margin-bottom: 2rem;">We believe in the power of prayer. Share your burdens or praise reports with our prayer team. Requests can be confidential.</p>
                 
@@ -117,11 +111,9 @@ require_once 'includes/header.php';
                 </form>
             </div>
 
-            <!-- Location Map -->
-            <div style="background-color: var(--bg-white); padding: 1.5rem; border-radius: 12px; box-shadow: var(--shadow-sm); border: 1px solid var(--border-color);">
+                        <div style="background-color: var(--bg-white); padding: 1.5rem; border-radius: 12px; box-shadow: var(--shadow-sm); border: 1px solid var(--border-color);">
                 <h3 style="color: var(--primary); margin-bottom: 1rem;"><i class="fa-solid fa-location-dot" style="color: var(--accent);"></i> Find Us</h3>
-                <!-- Styled Embed Map Placeholder -->
-                <div style="height: 250px; background-color: #e2e8f0; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-direction: column; text-align: center; padding: 2rem; background-image: linear-gradient(rgba(240,244,248,0.9), rgba(240,244,248,0.9)), url('https://images.unsplash.com/photo-1524661135-423995f22d0b?auto=format&fit=crop&q=80&w=400'); background-size: cover;">
+                                <div style="height: 250px; background-color: #e2e8f0; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-direction: column; text-align: center; padding: 2rem; background-image: linear-gradient(rgba(240,244,248,0.9), rgba(240,244,248,0.9)), url('https://images.unsplash.com/photo-1524661135-423995f22d0b?auto=format&fit=crop&q=80&w=400'); background-size: cover;">
                     <i class="fa-solid fa-map-location-dot" style="font-size: 3rem; color: var(--primary); margin-bottom: 1rem;"></i>
                     <h4 style="color: var(--primary); margin-bottom: 0.25rem;">Membley Seventh-day Adventist Church</h4>
                     <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">Membley Estate, off Clayworks, Ruiru, Kiambu County, Kenya</p>

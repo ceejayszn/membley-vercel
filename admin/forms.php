@@ -1,12 +1,10 @@
 <?php
-// admin/forms.php
 require_once 'auth.php';
 check_auth();
 
 require_once '../includes/db.php';
 
 try {
-    // Get counts for each type of form submission
     $member_count = $pdo->query("SELECT COUNT(*) FROM submissions WHERE type = 'member_registration'")->fetchColumn();
     $pledge_count = $pdo->query("SELECT COUNT(*) FROM submissions WHERE type = 'pledge'")->fetchColumn();
     $prayer_count = $pdo->query("SELECT COUNT(*) FROM submissions WHERE type = 'prayer'")->fetchColumn();
@@ -30,8 +28,7 @@ try {
 <body>
 
     <div class="admin-container">
-        <!-- Sidebar -->
-        <aside class="admin-sidebar">
+                <aside class="admin-sidebar">
             <div class="sidebar-brand">
                 <i class="fa-solid fa-church"></i> Membley SDA Admin
             </div>
@@ -48,8 +45,7 @@ try {
             </div>
         </aside>
 
-        <!-- Main Workspace -->
-        <main class="admin-main">
+                <main class="admin-main">
             <header class="admin-header">
                 <div class="admin-title">Manage Forms & Submissions</div>
                 <div class="admin-user">
@@ -61,11 +57,9 @@ try {
                 
                 <p style="color: #637381; margin-bottom: 2rem;">Manage active form categories, review submissions, and export data in Excel-compatible formats.</p>
 
-                <!-- Forms List Grid -->
-                <div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem;">
+                                <div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem;">
                     
-                    <!-- 1. Member Registration Form -->
-                    <div style="background-color: var(--bg-white); border-radius: 12px; border: 1px solid var(--border-color); padding: 2rem; display: flex; flex-direction: column; justify-content: space-between; box-shadow: var(--shadow-sm); min-height: 250px;">
+                                        <div style="background-color: var(--bg-white); border-radius: 12px; border: 1px solid var(--border-color); padding: 2rem; display: flex; flex-direction: column; justify-content: space-between; box-shadow: var(--shadow-sm); min-height: 250px;">
                         <div>
                             <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem;">
                                 <i class="fa-solid fa-users" style="font-size: 2.5rem; color: var(--primary);"></i>
@@ -85,8 +79,7 @@ try {
                         </div>
                     </div>
 
-                    <!-- 2. Pledges Form -->
-                    <div style="background-color: var(--bg-white); border-radius: 12px; border: 1px solid var(--border-color); padding: 2rem; display: flex; flex-direction: column; justify-content: space-between; box-shadow: var(--shadow-sm); min-height: 250px;">
+                                        <div style="background-color: var(--bg-white); border-radius: 12px; border: 1px solid var(--border-color); padding: 2rem; display: flex; flex-direction: column; justify-content: space-between; box-shadow: var(--shadow-sm); min-height: 250px;">
                         <div>
                             <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem;">
                                 <i class="fa-solid fa-hand-holding-dollar" style="font-size: 2.5rem; color: #1e40af;"></i>
@@ -106,8 +99,7 @@ try {
                         </div>
                     </div>
 
-                    <!-- 3. Prayer Requests -->
-                    <div style="background-color: var(--bg-white); border-radius: 12px; border: 1px solid var(--border-color); padding: 2rem; display: flex; flex-direction: column; justify-content: space-between; box-shadow: var(--shadow-sm); min-height: 250px;">
+                                        <div style="background-color: var(--bg-white); border-radius: 12px; border: 1px solid var(--border-color); padding: 2rem; display: flex; flex-direction: column; justify-content: space-between; box-shadow: var(--shadow-sm); min-height: 250px;">
                         <div>
                             <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem;">
                                 <i class="fa-solid fa-hands-praying" style="font-size: 2.5rem; color: #9d174d;"></i>
@@ -127,8 +119,7 @@ try {
                         </div>
                     </div>
 
-                    <!-- 4. Contact messages -->
-                    <div style="background-color: var(--bg-white); border-radius: 12px; border: 1px solid var(--border-color); padding: 2rem; display: flex; flex-direction: column; justify-content: space-between; box-shadow: var(--shadow-sm); min-height: 250px;">
+                                        <div style="background-color: var(--bg-white); border-radius: 12px; border: 1px solid var(--border-color); padding: 2rem; display: flex; flex-direction: column; justify-content: space-between; box-shadow: var(--shadow-sm); min-height: 250px;">
                         <div>
                             <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem;">
                                 <i class="fa-solid fa-envelope" style="font-size: 2.5rem; color: #0369a1;"></i>

@@ -1,24 +1,19 @@
 <?php
-// admin/analytics.php
 require_once 'auth.php';
 check_auth();
 
 require_once '../includes/db.php';
 
 try {
-    // Fetch stats totals
     $total_visits = $pdo->query("SELECT COUNT(*) FROM visitor_tracking")->fetchColumn();
     $total_seconds = $pdo->query("SELECT SUM(time_spent) FROM visitor_tracking")->fetchColumn() ?: 0;
     
-    // Average time spent per visit
     $avg_time = $total_visits > 0 ? round($total_seconds / $total_visits) : 0;
     
-    // Device counts
     $mobile_count = $pdo->query("SELECT COUNT(*) FROM visitor_tracking WHERE device_type = 'Mobile'")->fetchColumn();
     $tablet_count = $pdo->query("SELECT COUNT(*) FROM visitor_tracking WHERE device_type = 'Tablet'")->fetchColumn();
     $desktop_count = $pdo->query("SELECT COUNT(*) FROM visitor_tracking WHERE device_type = 'Desktop'")->fetchColumn();
 
-    // Fetch details of all visitor sessions
     $stmt = $pdo->query("SELECT * FROM visitor_tracking ORDER BY last_seen DESC LIMIT 100");
     $visitors = $stmt->fetchAll();
 } catch (PDOException $e) {
@@ -43,8 +38,7 @@ try {
 <body>
 
     <div class="admin-container">
-        <!-- Sidebar -->
-        <aside class="admin-sidebar">
+                <aside class="admin-sidebar">
             <div class="sidebar-brand">
                 <i class="fa-solid fa-church"></i> Membley SDA Admin
             </div>
@@ -62,8 +56,7 @@ try {
             </div>
         </aside>
 
-        <!-- Main Workspace -->
-        <main class="admin-main">
+                <main class="admin-main">
             <header class="admin-header">
                 <div class="admin-title">Visitor IP & Device Analytics</div>
                 <div class="admin-user">
@@ -72,8 +65,7 @@ try {
             </header>
 
             <div class="admin-content">
-                <!-- Statistics Cards -->
-                <div class="stats-grid">
+                                <div class="stats-grid">
                     <div class="stat-card">
                         <div class="stat-label">Total Visits logged</div>
                         <div class="stat-val"><?php echo $total_visits; ?></div>
@@ -91,8 +83,7 @@ try {
                     </div>
                 </div>
 
-                <!-- Visitors Detail Table -->
-                <div class="card-table-wrap" style="margin-top: 2rem;">
+                                <div class="card-table-wrap" style="margin-top: 2rem;">
                     <div class="card-table-header">
                         <span class="table-title">Recent Visitor Devices & Locations</span>
                     </div>

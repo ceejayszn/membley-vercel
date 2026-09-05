@@ -1,5 +1,4 @@
 <?php
-// admin/blogs.php
 require_once 'auth.php';
 check_auth();
 
@@ -11,12 +10,10 @@ $id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 $error = '';
 $success = '';
 
-// Helper to generate a slug
 function generateSlug($string) {
     return strtolower(trim(preg_replace('/[^A-Za-z0-9-]+/', '-', $string), '-'));
 }
 
-// 1. DELETE ACTION
 if ($action == 'delete' && $id > 0) {
     try {
         $stmt = $pdo->prepare("DELETE FROM blogs WHERE id = :id");
@@ -28,7 +25,6 @@ if ($action == 'delete' && $id > 0) {
     }
 }
 
-// 2. ADD & EDIT PROCESSORS
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $title = trim($_POST['title'] ?? '');
     $category = trim($_POST['category'] ?? 'General');
@@ -43,7 +39,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         
         if ($action == 'add') {
             try {
-                // Ensure slug is unique, append timestamp if duplicate
                 $check = $pdo->prepare("SELECT COUNT(*) FROM blogs WHERE slug = :slug");
                 $check->execute([':slug' => $slug]);
                 if ($check->fetchColumn() > 0) {
@@ -84,7 +79,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
 }
 
-// Fetch single post details for edit
 $post_data = null;
 if ($action == 'edit' && $id > 0) {
     $stmt = $pdo->prepare("SELECT * FROM blogs WHERE id = :id");
@@ -96,18 +90,15 @@ if ($action == 'edit' && $id > 0) {
     }
 }
 
-// Default View: Fetch all blogs
 $blogs = [];
 if (empty($action)) {
     try {
         $stmt = $pdo->query("SELECT * FROM blogs ORDER BY created_at DESC");
         $blogs = $stmt->fetchAll();
     } catch (PDOException $e) {
-        // Handle error
     }
 }
 
-// Handle notification messages
 $msg = isset($_GET['msg']) ? $_GET['msg'] : '';
 if ($msg == 'added') $success = 'Blog post created successfully.';
 if ($msg == 'updated') $success = 'Blog post updated successfully.';
@@ -125,8 +116,7 @@ if ($msg == 'deleted') $success = 'Blog post deleted successfully.';
 <body>
 
     <div class="admin-container">
-        <!-- Sidebar -->
-        <aside class="admin-sidebar">
+                <aside class="admin-sidebar">
             <div class="sidebar-brand">
                 <i class="fa-solid fa-church"></i> Membley SDA Admin
             </div>
@@ -142,8 +132,7 @@ if ($msg == 'deleted') $success = 'Blog post deleted successfully.';
             </div>
         </aside>
 
-        <!-- Main Workspace -->
-        <main class="admin-main">
+                <main class="admin-main">
             <header class="admin-header">
                 <div class="admin-title">
                     <?php 
@@ -171,8 +160,7 @@ if ($msg == 'deleted') $success = 'Blog post deleted successfully.';
                     </div>
                 <?php endif; ?>
 
-                <!-- 1. ADD / EDIT FORM VIEW -->
-                <?php if ($action == 'add' || $action == 'edit'): ?>
+                                <?php if ($action == 'add' || $action == 'edit'): ?>
                     <form action="blogs.php?action=<?php echo $action; ?><?php echo ($action == 'edit') ? '&id='.$id : ''; ?>" method="POST" class="admin-form">
                         <div class="admin-form-group">
                             <label class="admin-label" for="title">Post Title *</label>
@@ -205,8 +193,7 @@ if ($msg == 'deleted') $success = 'Blog post deleted successfully.';
                         <a href="blogs.php" class="admin-btn-outline">Cancel</a>
                     </form>
 
-                <!-- 2. DEFAULT LIST VIEW -->
-                <?php else: ?>
+                                <?php else: ?>
                     <div style="display: flex; justify-content: flex-end; margin-bottom: 1.5rem;">
                         <a href="blogs.php?action=add" class="admin-btn"><i class="fa-solid fa-plus"></i> Add New Post</a>
                     </div>

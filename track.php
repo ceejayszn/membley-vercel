@@ -1,17 +1,14 @@
 <?php
-// track.php
 require_once 'includes/db.php';
 
 header('Content-Type: application/json');
 
-// Only allow POST requests
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
     echo json_encode(['error' => 'Method not allowed']);
     exit;
 }
 
-// Read raw JSON input
 $input = json_decode(file_get_contents('php://input'), true);
 
 $page = trim($input['page'] ?? '');
@@ -25,12 +22,9 @@ if (empty($page) || !in_array($type, ['view', 'click', 'time'])) {
 }
 
 try {
-    // --- 1. Page Analytics ---
-    // Ensure the page entry exists
     $stmt = $pdo->prepare("INSERT OR IGNORE INTO analytics (page, views, clicks, time_spent) VALUES (:page, 0, 0, 0)");
     $stmt->execute([':page' => $page]);
 
-    // Increment the specified page metric
     if ($type === 'view') {
         $stmt = $pdo->prepare("UPDATE analytics SET views = views + 1 WHERE page = :page");
         $stmt->execute([':page' => $page]);
@@ -42,8 +36,6 @@ try {
         $stmt->execute([':page' => $page, ':value' => $value]);
     }
 
-    // --- 2. Visitor Tracking & Device Detection ---
-    // Extract IP Address
     $ip = $_SERVER['REMOTE_ADDR'] ?? 'Unknown';
     if (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
         $ip = explode(',', $_SERVER['HTTP_X_FORWARDED_FOR'])[0];
@@ -52,10 +44,8 @@ try {
     }
     $ip = trim($ip);
 
-    // Extract User Agent
     $user_agent = $_SERVER['HTTP_USER_AGENT'] ?? 'Unknown';
 
-    // Parse Device Type
     $device_type = 'Desktop';
     if (preg_match('/mobile|phone|ipod|android|blackberry|webos|iemobile/i', $user_agent)) {
         $device_type = 'Mobile';
@@ -63,7 +53,6 @@ try {
         $device_type = 'Tablet';
     }
 
-    // Parse Browser
     $browser = 'Unknown';
     if (preg_match('/chrome|crios/i', $user_agent)) {
         $browser = 'Chrome';
@@ -77,12 +66,10 @@ try {
         $browser = 'Edge';
     }
 
-    // Location & ISP Geolocation Caching
     $location = 'Localhost';
     $isp = 'Local Loopback';
 
     if ($ip !== '127.0.0.1' && $ip !== '::1' && $ip !== 'localhost' && $ip !== 'Unknown') {
-        // Query database to see if we already checked this IP recently
         $ip_stmt = $pdo->prepare("SELECT location, network_isp FROM visitor_tracking WHERE ip_address = :ip LIMIT 1");
         $ip_stmt->execute([':ip' => $ip]);
         $cached = $ip_stmt->fetch();
@@ -91,7 +78,6 @@ try {
             $location = $cached['location'];
             $isp = $cached['network_isp'];
         } else {
-            // Fetch geo details using ip-api.com
             $ctx = stream_context_create(['http' => ['timeout' => 2]]);
             $geo_json = @file_get_contents("http://ip-api.com/json/" . urlencode($ip), false, $ctx);
             if ($geo_json) {
@@ -112,8 +98,6 @@ try {
         }
     }
 
-    // Search for active session in the last 15 minutes for the same IP + User Agent
-    // We adjust SQLite query syntax
     $session_stmt = $pdo->prepare("SELECT id FROM visitor_tracking WHERE ip_address = :ip AND user_agent = :ua AND last_seen > datetime('now', '-15 minutes') ORDER BY id DESC LIMIT 1");
     $session_stmt->execute([':ip' => $ip, ':ua' => $user_agent]);
     $existing_session = $session_stmt->fetch();
@@ -128,7 +112,6 @@ try {
             $update_stmt->execute([':id' => $visitor_id]);
         }
     } else {
-        // Create new visit log entry
         $insert_stmt = $pdo->prepare("INSERT INTO visitor_tracking (ip_address, user_agent, device_type, browser, location, network_isp, time_spent) VALUES (:ip, :ua, :device, :browser, :loc, :isp, :time)");
         $insert_stmt->execute([
             ':ip' => $ip,

@@ -1,5 +1,4 @@
 <?php
-// includes/header.php
 $current_page = basename($_SERVER['SCRIPT_NAME']);
 ?>
 <!DOCTYPE html>
@@ -11,14 +10,12 @@ $current_page = basename($_SERVER['SCRIPT_NAME']);
     <meta name="description" content="Welcome to Membley Seventh-day Adventist Church in Ruiru, Kenya. Join us for Sabbath worship, youth ministries, bible study, and community outreach.">
     <link rel="icon" type="image/png" href="assets/images/sda_logo.png">
     <link rel="stylesheet" href="assets/css/style.css">
-    <!-- FontAwesome for icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
 
     <?php if ($current_page == 'index.php'): ?>
-    <!-- Top Bar -->
-    <div class="top-bar">
+        <div class="top-bar">
         <div class="container">
             <div>
                 <i class="fa-solid fa-location-dot"></i> Ruiru, Membley Estate, Kenya | 
@@ -33,15 +30,13 @@ $current_page = basename($_SERVER['SCRIPT_NAME']);
     </div>
     <?php endif; ?>
 
-    <!-- Main Navigation Header -->
-    <header class="main-header">
+        <header class="main-header">
         <div class="container header-container">
             <a href="index.php" class="logo-link">
                 <img src="assets/images/church_logo.jpg" alt="Membley Seventh-day Adventist Church" class="logo-svg" style="height: 65px; width: auto; border-radius: 4px;">
             </a>
 
-            <!-- Desktop Menu -->
-            <ul class="nav-menu">
+                        <ul class="nav-menu">
                 <li><a href="index.php" class="nav-link <?php echo ($current_page == 'index.php') ? 'active' : ''; ?>">Home</a></li>
                 <li><a href="about.php" class="nav-link <?php echo ($current_page == 'about.php') ? 'active' : ''; ?>">About</a></li>
                 <li><a href="ministries.php" class="nav-link <?php echo ($current_page == 'ministries.php') ? 'active' : ''; ?>">Ministries</a></li>
@@ -52,8 +47,7 @@ $current_page = basename($_SERVER['SCRIPT_NAME']);
                 <li><a href="contact.php" class="nav-link <?php echo ($current_page == 'contact.php') ? 'active' : ''; ?>">Contact</a></li>
             </ul>
 
-            <!-- Mobile Hamburger Button -->
-            <button class="mobile-menu-btn" id="mobileMenuBtn">
+                        <button class="mobile-menu-btn" id="mobileMenuBtn">
                 <span></span>
                 <span></span>
                 <span></span>
@@ -61,8 +55,7 @@ $current_page = basename($_SERVER['SCRIPT_NAME']);
         </div>
     </header>
 
-    <!-- Mobile Drawer Menu -->
-    <nav class="mobile-nav" id="mobileNav">
+        <nav class="mobile-nav" id="mobileNav">
         <ul class="mobile-nav-list">
             <li><a href="index.php" class="mobile-nav-link">Home</a></li>
             <li><a href="about.php" class="mobile-nav-link">About</a></li>

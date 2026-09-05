@@ -1,9 +1,7 @@
 <?php
-// events.php
 require_once 'includes/db.php';
 require_once 'includes/header.php';
 
-// Fetch upcoming events from database (today <= event_date + 2 days)
 $upcoming_events = [];
 try {
     $stmt = $pdo->query("SELECT * FROM events ORDER BY event_date ASC");
@@ -16,11 +14,9 @@ try {
         }
     }
 } catch (PDOException $e) {
-    // Gracefully handle database query issues
 }
 ?>
 
-<!-- Banner Section -->
 <section style="background-color: var(--primary-dark); color: white; padding: 3.5rem 0; text-align: center; background-image: linear-gradient(rgba(4,25,40,0.85), rgba(4,25,40,0.85)), url('https://images.unsplash.com/photo-1544427920-c49ccfb85579?auto=format&fit=crop&q=80&w=1200'); background-size: cover; background-position: center;">
     <div class="container">
         <h1 style="color: white; font-size: 2.5rem; margin-bottom: 0.5rem;">Events & Announcements</h1>
@@ -28,7 +24,6 @@ try {
     </div>
 </section>
 
-<!-- Events Main Showcase Section (No sidebar) -->
 <section class="section-padding container" style="max-width: 1000px; margin: 0 auto;">
     
     <?php if (!empty($upcoming_events)): ?>
@@ -40,16 +35,14 @@ try {
                     $formatted_month = date('M', strtotime($event['event_date']));
                 ?>
                 <?php if ($is_featured): ?>
-                    <!-- Green Outline Featured Card Showcase -->
-                    <div class="event-card-green-outline">
+                                        <div class="event-card-green-outline">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 0.5rem;">
                             <span class="badge-green-outline"><i class="fa-solid fa-sparkles"></i> Featured Upcoming Event</span>
                             <span style="color: #a3e635; font-weight: 700; font-size: 0.85rem;"><i class="fa-solid fa-location-dot"></i> <?php echo htmlspecialchars($event['location']); ?></span>
                         </div>
 
                         <div class="event-flyer-box">
-                            <!-- Left: Event Text Information -->
-                            <div class="flyer-main-details">
+                                                        <div class="flyer-main-details">
                                 <span class="flyer-presenter"><?php echo htmlspecialchars(!empty($event['subtitle']) ? 'MEMBLEY ADVENTIST PRESENTS' : 'MEMBLEY SDA CHURCH'); ?></span>
                                 <h2 class="flyer-title"><?php echo htmlspecialchars($event['title']); ?></h2>
                                 
@@ -89,8 +82,7 @@ try {
                                 </div>
                             </div>
 
-                            <!-- Right: Poster Display Box (UNCROPPED FULL) -->
-                            <div class="flyer-poster-wrapper">
+                                                        <div class="flyer-poster-wrapper">
                                 <?php if (!empty($event['image_url']) && file_exists(__DIR__ . '/' . $event['image_url'])): ?>
                                     <a href="rsvp.php" title="Click to RSVP & Confirm Attendance" style="display: block; width: 100%; max-width: 440px; text-decoration: none;">
                                         <img src="<?php echo htmlspecialchars($event['image_url']); ?>" alt="<?php echo htmlspecialchars($event['title']); ?>" class="flyer-poster-img">
@@ -111,8 +103,7 @@ try {
                             </div>
                         </div>
 
-                        <!-- Reservation Call to Action at Bottom of Poster Card -->
-                        <div class="event-rsvp-cta" style="margin-top: 2rem;">
+                                                <div class="event-rsvp-cta" style="margin-top: 2rem;">
                             <div>
                                 <div class="event-rsvp-title">
                                     <i class="fa-solid fa-circle-check" style="color: var(--accent); font-size: 1.3rem;"></i>
@@ -135,8 +126,7 @@ try {
 
                 <?php else: ?>
 
-                    <!-- Standard Event List Card -->
-                    <div class="event-list-card">
+                                        <div class="event-list-card">
                         <div style="background-color: var(--primary-dark); color: white; padding: 1.25rem; border-radius: 10px; text-align: center; min-width: 100px;">
                             <span style="font-size: 1.9rem; font-weight: 800; display: block; line-height: 1; color: var(--accent);"><?php echo $formatted_day; ?></span>
                             <span style="font-size: 0.85rem; font-weight: 700; text-transform: uppercase;"><?php echo $formatted_month; ?></span>

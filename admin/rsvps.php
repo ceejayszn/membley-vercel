@@ -1,5 +1,4 @@
 <?php
-// admin/rsvps.php - Attendance & Device Tracking Management
 require_once 'auth.php';
 check_auth();
 
@@ -8,7 +7,6 @@ require_once '../includes/db.php';
 $action = isset($_GET['action']) ? $_GET['action'] : '';
 $id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 
-// 1. DELETE ACTION
 if ($action == 'delete' && $id > 0) {
     try {
         $stmt = $pdo->prepare("DELETE FROM event_rsvps WHERE id = :id");
@@ -16,11 +14,9 @@ if ($action == 'delete' && $id > 0) {
         header('Location: rsvps.php?msg=deleted');
         exit;
     } catch (PDOException $e) {
-        // Fail silently
     }
 }
 
-// 2. CSV EXPORT FUNCTIONALITY
 if ($action == 'export') {
     $export_sql = "SELECT created_at, full_name, is_membley_member, church_from, phone, attendees_count, inquiry, phone_model, device_type, os, browser, ip_address, location, network_isp FROM event_rsvps ORDER BY created_at DESC";
 
@@ -35,7 +31,6 @@ if ($action == 'export') {
         
         $output = fopen('php://output', 'w');
         
-        // Headers
         fputcsv($output, ['Registration Date', 'Full Name', 'Is Membley Member', 'Church From', 'Phone Number', 'Attendees Count', 'Inquiry/Notes', 'Phone Model', 'Device Type', 'Operating System', 'Browser', 'IP Address', 'Location', 'Network/ISP']);
         
         foreach ($rows as $row) {
@@ -49,7 +44,6 @@ if ($action == 'export') {
     }
 }
 
-// 3. STATS
 $total_rsvps = 0;
 $total_attendees = 0;
 $members_count = 0;
@@ -69,7 +63,6 @@ try {
     $visitors_count = $stats['visitors'] ?? 0;
 } catch (PDOException $e) {}
 
-// 4. FETCH RSVPS
 try {
     $stmt = $pdo->query("SELECT * FROM event_rsvps ORDER BY created_at DESC");
     $rsvps = $stmt->fetchAll();
@@ -89,8 +82,7 @@ try {
 <body>
 
     <div class="admin-container">
-        <!-- Sidebar -->
-        <aside class="admin-sidebar">
+                <aside class="admin-sidebar">
             <div class="sidebar-brand">
                 <i class="fa-solid fa-church"></i> Membley SDA Admin
             </div>
@@ -108,8 +100,7 @@ try {
             </div>
         </aside>
 
-        <!-- Main Workspace -->
-        <main class="admin-main">
+                <main class="admin-main">
             <header class="admin-header">
                 <div class="admin-title">Homecoming Attendance RSVPs</div>
                 <div class="admin-user">
@@ -119,8 +110,7 @@ try {
 
             <div class="admin-content">
                 
-                <!-- Quick Stats Grid -->
-                <div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); margin-bottom: 2rem;">
+                                <div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); margin-bottom: 2rem;">
                     <div class="stat-card">
                         <div class="stat-icon" style="background-color: rgba(132, 204, 22, 0.2); color: #65a30d;">
                             <i class="fa-solid fa-user-check"></i>
@@ -162,8 +152,7 @@ try {
                     </div>
                 </div>
 
-                <!-- Export Toolbar -->
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
                     <div>
                         <h3 style="color: var(--primary); margin: 0; font-size: 1.25rem;">Homecoming Sabbath 10 Yrs Attendance List</h3>
                         <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.2rem;">Showing all confirmed RSVPs with tracked device info and phone models.</p>
@@ -171,8 +160,7 @@ try {
                     <a href="rsvps.php?action=export" class="admin-btn" style="background-color: #16a34a;"><i class="fa-solid fa-file-excel"></i> Export All to CSV</a>
                 </div>
 
-                <!-- Table Card -->
-                <div class="card-table-wrap">
+                                <div class="card-table-wrap">
                     <div class="table-responsive">
                         <table>
                             <thead>

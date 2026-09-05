@@ -1,10 +1,8 @@
 <?php
-// admin/login.php
 if (session_status() == PHP_SESSION_NONE) {
     session_start();
 }
 
-// Redirect if already logged in
 if (isset($_SESSION['admin_logged_in']) && $_SESSION['admin_logged_in'] === true) {
     header('Location: dashboard.php');
     exit;
@@ -27,7 +25,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $user = $stmt->fetch();
 
             if ($user && password_verify($password, $user['password'])) {
-                // Password matches, log user in
                 $_SESSION['admin_logged_in'] = true;
                 $_SESSION['admin_id'] = $user['id'];
                 $_SESSION['admin_username'] = $user['username'];
@@ -55,8 +52,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     <div class="login-card">
         <div class="login-logo">
-            <!-- Simplified Church SVG logo -->
-            <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" style="height: 60px; width: auto;">
+                        <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" style="height: 60px; width: auto;">
                 <circle cx="50" cy="50" r="45" fill="#082b43" stroke="#f2a900" stroke-width="2"/>
                 <path d="M30 65 C40 60, 50 63, 50 65 C50 63, 60 60, 70 65 L70 50 C60 48, 50 50, 50 52 C50 50, 40 48, 30 50 Z" fill="#ffffff"/>
                 <path d="M50 40 L50 62 M45 46 L55 46" stroke="#082b43" stroke-width="2"/>

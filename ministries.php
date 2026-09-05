@@ -1,13 +1,10 @@
 <?php
-// ministries.php
 require_once 'includes/db.php';
 require_once 'includes/header.php';
 
-// Check if tab parameter is passed
 $active_tab = isset($_GET['tab']) ? $_GET['tab'] : 'youth';
 ?>
 
-<!-- Banner Section -->
 <section style="background-color: var(--primary-dark); color: white; padding: 4rem 0; text-align: center; background-image: linear-gradient(rgba(4,25,40,0.8), rgba(4,25,40,0.8)), url('https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&q=80&w=1200'); background-size: cover; background-position: center;">
     <div class="container">
         <h1 style="color: white; font-size: 2.75rem; margin-bottom: 0.5rem;">Church Departments & Ministries</h1>
@@ -15,12 +12,10 @@ $active_tab = isset($_GET['tab']) ? $_GET['tab'] : 'youth';
     </div>
 </section>
 
-<!-- Ministries Grid Section -->
 <section class="section-padding container">
     <div class="grid-3">
         
-        <!-- Adventurous Club -->
-        <div class="card" style="text-align: center;">
+                <div class="card" style="text-align: center;">
             <div class="card-img" style="background-image: url('assets/images/adventurer_logo.png'); background-size: 50%; background-repeat: no-repeat; background-color: var(--bg-light); background-position: center; border-bottom: 1px solid var(--border-color);"></div>
             <div class="card-body">
                 <h3 class="card-title">Adventurous Club</h3>
@@ -31,8 +26,7 @@ $active_tab = isset($_GET['tab']) ? $_GET['tab'] : 'youth';
             </div>
         </div>
 
-        <!-- Pathfinders -->
-        <div class="card" style="text-align: center;">
+                <div class="card" style="text-align: center;">
             <div class="card-img" style="background-image: url('assets/images/pathfinder_logo.png'); background-size: 50%; background-repeat: no-repeat; background-color: var(--bg-light); background-position: center; border-bottom: 1px solid var(--border-color);"></div>
             <div class="card-body">
                 <h3 class="card-title">Pathfinder Club</h3>
@@ -43,8 +37,7 @@ $active_tab = isset($_GET['tab']) ? $_GET['tab'] : 'youth';
             </div>
         </div>
 
-        <!-- Youth (AY) -->
-        <div class="card" style="text-align: center;">
+                <div class="card" style="text-align: center;">
             <div class="card-img" style="background-image: url('https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&q=80&w=600'); border-bottom: 1px solid var(--border-color);"></div>
             <div class="card-body">
                 <h3 class="card-title">Adventist Youth (AY)</h3>
@@ -55,8 +48,7 @@ $active_tab = isset($_GET['tab']) ? $_GET['tab'] : 'youth';
             </div>
         </div>
 
-        <!-- Music & Choir -->
-        <div class="card" style="text-align: center;">
+                <div class="card" style="text-align: center;">
             <div class="card-img" style="background-image: url('https://images.unsplash.com/photo-1438232992991-995b7058bbb3?auto=format&fit=crop&q=80&w=600'); border-bottom: 1px solid var(--border-color);"></div>
             <div class="card-body">
                 <h3 class="card-title">Music & Choir</h3>
@@ -67,8 +59,7 @@ $active_tab = isset($_GET['tab']) ? $_GET['tab'] : 'youth';
             </div>
         </div>
 
-        <!-- Women's Ministries -->
-        <div class="card" style="text-align: center;">
+                <div class="card" style="text-align: center;">
             <div class="card-img" style="background-image: url('https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?auto=format&fit=crop&q=80&w=600'); border-bottom: 1px solid var(--border-color);"></div>
             <div class="card-body">
                 <h3 class="card-title">Women's Ministries</h3>
@@ -79,8 +70,7 @@ $active_tab = isset($_GET['tab']) ? $_GET['tab'] : 'youth';
             </div>
         </div>
 
-        <!-- AMO (Men's Ministries) -->
-        <div class="card" style="text-align: center;">
+                <div class="card" style="text-align: center;">
             <div class="card-img" style="background-image: url('https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=600'); border-bottom: 1px solid var(--border-color);"></div>
             <div class="card-body">
                 <h3 class="card-title">Adventist Men (AMO)</h3>

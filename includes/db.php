@@ -1,10 +1,7 @@
 <?php
-// includes/db.php
 
-// Use /data/church.db on Docker/Render (persistent disk) — fallback to includes/ for local dev
 if (is_dir('/data') && is_writable('/data')) {
     $db_file = '/data/church.db';
-    // On first deploy, seed from bundled DB if /data/church.db doesn't exist yet
     if (!file_exists($db_file) && file_exists(__DIR__ . '/church.db')) {
         @copy(__DIR__ . '/church.db', $db_file);
     }
@@ -13,7 +10,6 @@ if (is_dir('/data') && is_writable('/data')) {
 }
 
 try {
-    // Connect to SQLite database (will be created automatically if not exists)
     $dsn = "sqlite:$db_file";
     $pdo = new PDO($dsn, null, null, [
         PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
@@ -21,13 +17,10 @@ try {
         PDO::ATTR_TIMEOUT => 5
     ]);
 
-    // Enable WAL mode for better concurrency and crash safety
     $pdo->exec("PRAGMA journal_mode=WAL");
     $pdo->exec("PRAGMA foreign_keys=ON");
 
-    // Create tables if they do not exist
     
-    // 1. Users Table (Admin Portal)
     $pdo->exec("CREATE TABLE IF NOT EXISTS users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         username TEXT UNIQUE NOT NULL,
@@ -35,7 +28,6 @@ try {
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )");
 
-    // 2. Blogs Table
     $pdo->exec("CREATE TABLE IF NOT EXISTS blogs (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         title TEXT NOT NULL,
@@ -44,10 +36,17 @@ try {
         excerpt TEXT NOT NULL,
         image_url TEXT,
         category TEXT DEFAULT 'General',
+        status TEXT DEFAULT 'published',
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )");
 
-    // 3. Submissions Table (Contacts, Prayer Requests, Pledges)
+    $pdo->exec("CREATE TABLE IF NOT EXISTS blog_invites (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        token TEXT UNIQUE NOT NULL,
+        is_used INTEGER DEFAULT 0,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )");
+
     $pdo->exec("CREATE TABLE IF NOT EXISTS submissions (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         type TEXT NOT NULL, -- 'contact', 'prayer', 'pledge'
@@ -60,7 +59,6 @@ try {
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )");
 
-    // 4. Analytics Table
     $pdo->exec("CREATE TABLE IF NOT EXISTS analytics (
         page TEXT PRIMARY KEY,
         views INTEGER DEFAULT 0,
@@ -68,7 +66,6 @@ try {
         time_spent INTEGER DEFAULT 0
     )");
 
-    // 5. Visitor Tracking Table (IPs, Devices, Location, ISPs)
     $pdo->exec("CREATE TABLE IF NOT EXISTS visitor_tracking (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         ip_address TEXT NOT NULL,
@@ -82,7 +79,6 @@ try {
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )");
 
-    // 6. Events Table
     $pdo->exec("CREATE TABLE IF NOT EXISTS events (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         title TEXT NOT NULL,
@@ -97,7 +93,6 @@ try {
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )");
 
-    // 7. Event RSVPs Table (Attendance & Device Tracking)
     $pdo->exec("CREATE TABLE IF NOT EXISTS event_rsvps (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         event_id INTEGER DEFAULT 1,
@@ -119,7 +114,6 @@ try {
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )");
 
-    // Seed events if empty
     $stmtEvents = $pdo->query("SELECT COUNT(*) FROM events");
     if ($stmtEvents->fetchColumn() == 0) {
         $seedEvents = [
@@ -174,7 +168,6 @@ try {
         }
     }
 
-    // Insert default admin if users table is empty (admin / admin123)
     $stmt = $pdo->query("SELECT COUNT(*) FROM users");
     if ($stmt->fetchColumn() == 0) {
         $defaultPassword = password_hash('admin123', PASSWORD_BCRYPT);
@@ -184,7 +177,6 @@ try {
             ':password' => $defaultPassword
         ]);
         
-        // Seed initial blog posts
         $seedBlogs = [
             [
                 'title' => 'Welcome to our New Website!',

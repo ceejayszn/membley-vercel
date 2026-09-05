@@ -1,18 +1,14 @@
 <?php
-// index.php
 require_once 'includes/db.php';
 require_once 'includes/header.php';
 
-// Fetch 1 latest blog post
 $latest_blogs = [];
 try {
-    $stmt = $pdo->query("SELECT * FROM blogs ORDER BY created_at DESC LIMIT 1");
+    $stmt = $pdo->query("SELECT * FROM blogs WHERE status = 'published' ORDER BY created_at DESC LIMIT 1");
     $latest_blogs = $stmt->fetchAll();
 } catch (PDOException $e) {
-    // Gracefully handle query issue if any
 }
 
-// Fetch upcoming events (active until 2 days after event_date)
 $upcoming_events = [];
 try {
     $stmt = $pdo->query("SELECT * FROM events ORDER BY event_date ASC");
@@ -25,15 +21,12 @@ try {
         }
     }
 } catch (PDOException $e) {
-    // Gracefully handle query issue if any
 }
 ?>
 
-<!-- Hero Slider Section -->
 <section class="hero">
     <div class="hero-slider">
-        <!-- Slide 1 -->
-        <div class="slide active" style="background-image: linear-gradient(rgba(0,47,93,0.35), rgba(0,47,93,0.35)), url('assets/images/church_banner.png'); background-size: cover; background-position: center;">
+                <div class="slide active" style="background-image: linear-gradient(rgba(0,47,93,0.35), rgba(0,47,93,0.35)), url('assets/images/church_banner.png'); background-size: cover; background-position: center;">
             <div class="container">
                 <div class="hero-content">
                     <span class="section-subtitle" style="color: var(--accent); font-weight: 800;">Welcome to Membley SDA Church</span>
@@ -46,8 +39,7 @@ try {
                 </div>
             </div>
         </div>
-        <!-- Slide 2 -->
-        <div class="slide" style="background-image: linear-gradient(rgba(0,47,93,0.5), rgba(0,47,93,0.5)), url('assets/images/adventurer_banner.jpg'); background-size: cover; background-position: center;">
+                <div class="slide" style="background-image: linear-gradient(rgba(0,47,93,0.5), rgba(0,47,93,0.5)), url('assets/images/adventurer_banner.jpg'); background-size: cover; background-position: center;">
             <div class="container">
                 <div class="hero-content">
                     <span class="section-subtitle" style="color: var(--accent); font-weight: 800;">Nurturing the Next Generation</span>
@@ -63,7 +55,6 @@ try {
     </div>
 </section>
 
-<!-- Service Times Banner Overlay -->
 <section style="position: relative; z-index: 20;">
     <div class="container">
         <div class="services-banner">
@@ -91,7 +82,6 @@ try {
     </div>
 </section>
 
-<!-- Upcoming Events Showcase Section (Before Welcome Section) -->
 <section class="section-padding container" id="events-showcase">
     <div class="section-header" style="margin-bottom: 2.5rem;">
         <span class="section-subtitle"><i class="fa-solid fa-calendar-star"></i> Upcoming Events & Convocations</span>
@@ -106,8 +96,7 @@ try {
                 $formatted_month = date('M Y', strtotime($event['event_date']));
             ?>
             <?php if ($is_new): ?>
-                <!-- Green Outline Featured Card Showcase -->
-                <div class="event-card-green-outline" style="margin-bottom: 2rem;">
+                                <div class="event-card-green-outline" style="margin-bottom: 2rem;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
                         <span class="badge-green-outline">
                             <i class="fa-solid fa-sparkles"></i> NEW UPCOMING EVENT
@@ -115,8 +104,7 @@ try {
                     </div>
 
                     <div class="event-flyer-box">
-                        <!-- Main Flyer Text Details -->
-                        <div class="flyer-main-details">
+                                                <div class="flyer-main-details">
                             <span class="flyer-presenter"><i class="fa-solid fa-church"></i> <?php echo htmlspecialchars(!empty($event['subtitle']) ? 'MEMBLEY ADVENTIST PRESENTS' : 'MEMBLEY SDA CHURCH'); ?></span>
                             <h3 class="flyer-title"><?php echo htmlspecialchars($event['title']); ?></h3>
                             <?php if (!empty($event['subtitle'])): ?>
@@ -154,8 +142,7 @@ try {
                             </div>
                         </div>
 
-                        <!-- Flyer Image & Visual Badge (FULL UNCROPPED) -->
-                        <div class="flyer-poster-wrapper">
+                                                <div class="flyer-poster-wrapper">
                             <?php if (!empty($event['image_url']) && file_exists(__DIR__ . '/' . $event['image_url'])): ?>
                                 <a href="events.php" title="Click to view event details and RSVP" style="display: block; width: 100%; max-width: 440px; text-decoration: none;">
                                     <img src="<?php echo htmlspecialchars($event['image_url']); ?>" alt="<?php echo htmlspecialchars($event['title']); ?>" class="flyer-poster-img">
@@ -177,8 +164,7 @@ try {
                         </div>
                     </div>
 
-                    <!-- Will You Be Attending? RSVP Call to Action -->
-                    <div class="event-rsvp-cta">
+                                        <div class="event-rsvp-cta">
                         <div>
                             <div class="event-rsvp-title">
                                 <i class="fa-solid fa-circle-question" style="color: var(--accent); font-size: 1.3rem;"></i>
@@ -199,8 +185,7 @@ try {
                     </div>
                 </div>
             <?php else: ?>
-                <!-- Additional Standard Event Card -->
-                <div class="event-list-card" style="margin-bottom: 1.5rem;">
+                                <div class="event-list-card" style="margin-bottom: 1.5rem;">
                     <div style="background-color: var(--primary-dark); color: white; padding: 1rem; border-radius: 8px; text-align: center; min-width: 90px;">
                         <span style="font-size: 1.6rem; font-weight: 800; display: block; line-height: 1; color: var(--accent);"><?php echo $formatted_day; ?></span>
                         <span style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase;"><?php echo date('M', strtotime($event['event_date'])); ?></span>
@@ -221,7 +206,6 @@ try {
     <?php endif; ?>
 </section>
 
-<!-- Welcome Section -->
 <section class="section-padding container">
     <div class="responsive-hero-grid">
         <div>
@@ -242,8 +226,7 @@ try {
             </div>
         </div>
         <div style="position: relative;">
-            <!-- Church Building Mock/Placeholder -->
-            <div style="height: 380px; border-radius: 12px; background-image: linear-gradient(rgba(8,43,67,0.1), rgba(8,43,67,0.1)), url('https://images.unsplash.com/photo-1548625361-155deee223d2?auto=format&fit=crop&q=80&w=600'); background-size: cover; background-position: center; box-shadow: var(--shadow-lg);"></div>
+                        <div style="height: 380px; border-radius: 12px; background-image: linear-gradient(rgba(8,43,67,0.1), rgba(8,43,67,0.1)), url('https://images.unsplash.com/photo-1548625361-155deee223d2?auto=format&fit=crop&q=80&w=600'); background-size: cover; background-position: center; box-shadow: var(--shadow-lg);"></div>
             <div style="position: absolute; bottom: -20px; left: -20px; background-color: var(--accent); color: var(--primary-dark); padding: 1.5rem; border-radius: 8px; box-shadow: var(--shadow-md); font-weight: 700;">
                 <span style="font-size: 2rem; display: block; line-height: 1;">10+</span>
                 <span style="font-size: 0.85rem; font-weight: 600;">Active Ministries</span>
@@ -252,7 +235,6 @@ try {
     </div>
 </section>
 
-<!-- Departments Highlights -->
 <section style="background-color: var(--bg-white);" class="section-padding">
     <div class="container">
         <div class="section-header">
@@ -260,8 +242,7 @@ try {
             <h2 class="section-title">Nurturing All Age Groups</h2>
         </div>
         <div class="grid-3">
-            <!-- Kids -->
-            <div class="card">
+                        <div class="card">
                 <div class="card-img" style="background-image: url('assets/images/adventurer_logo.png'); background-size: contain; background-repeat: no-repeat; background-color: var(--bg-light); background-position: center;">
                     <span class="card-tag">Children</span>
                 </div>
@@ -272,8 +253,7 @@ try {
                 </div>
             </div>
             
-            <!-- Pathfinders -->
-            <div class="card">
+                        <div class="card">
                 <div class="card-img" style="background-image: url('assets/images/pathfinder_logo.png'); background-size: contain; background-repeat: no-repeat; background-color: var(--bg-light);">
                     <span class="card-tag">Club</span>
                 </div>
@@ -284,8 +264,7 @@ try {
                 </div>
             </div>
 
-            <!-- Youth -->
-            <div class="card">
+                        <div class="card">
                 <div class="card-img" style="background-image: url('https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&q=80&w=400');">
                     <span class="card-tag">Youth</span>
                 </div>
@@ -299,7 +278,6 @@ try {
     </div>
 </section>
 
-<!-- Latest Blogs & News -->
 <section class="section-padding container">
     <div class="section-header">
         <span class="section-subtitle">News & Sermons</span>
@@ -308,8 +286,7 @@ try {
     
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 2rem;">
         
-        <!-- Latest Blog/Update -->
-        <div>
+                <div>
             <h3 style="margin-bottom: 1rem; color: var(--primary);">Recent Post</h3>
             <?php if (!empty($latest_blogs)): ?>
                 <?php foreach ($latest_blogs as $post): ?>
@@ -330,12 +307,10 @@ try {
             <?php endif; ?>
         </div>
 
-        <!-- Camp Meeting Update -->
-        <div>
+                <div>
             <h3 style="margin-bottom: 1rem; color: var(--primary);">Camp Meeting Update</h3>
             <div class="card" style="border: 2px solid var(--accent);">
-                <!-- User will send photo to place here -->
-                <div class="card-img" style="background-image: url(''); background-color: #f1f5f9; display: flex; align-items: center; justify-content: center;">
+                                <div class="card-img" style="background-image: url(''); background-color: #f1f5f9; display: flex; align-items: center; justify-content: center;">
                     <span style="color: var(--text-muted); font-size: 0.9rem;">[Camp Meeting Photo Placeholder]</span>
                     <span class="card-tag" style="background-color: var(--accent); color: var(--primary-dark);">Special Update</span>
                 </div>

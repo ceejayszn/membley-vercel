@@ -1,5 +1,4 @@
 <?php
-// rsvp.php - Interactive Attendance Registration & Celebration
 require_once 'includes/db.php';
 require_once 'includes/header.php';
 
@@ -8,14 +7,12 @@ $submitted = false;
 $error_msg = "";
 $registered_name = "";
 
-// Helper function to extract detailed Phone Model, Device, and OS from User-Agent
 function detect_device_details($user_agent) {
     $device_type = 'Desktop';
     $phone_model = 'Desktop PC / Mac';
     $os = 'Unknown OS';
     $browser = 'Unknown Browser';
 
-    // 1. Operating System Detection
     if (preg_match('/windows nt 10.0/i', $user_agent)) $os = 'Windows 10/11';
     elseif (preg_match('/windows nt 6.3/i', $user_agent)) $os = 'Windows 8.1';
     elseif (preg_match('/windows nt 6.1/i', $user_agent)) $os = 'Windows 7';
@@ -25,14 +22,12 @@ function detect_device_details($user_agent) {
     elseif (preg_match('/ipad/i', $user_agent)) $os = 'iPadOS (iPad)';
     elseif (preg_match('/linux/i', $user_agent)) $os = 'Linux';
 
-    // 2. Device Type Detection
     if (preg_match('/ipad|tablet|playbook|silk/i', $user_agent)) {
         $device_type = 'Tablet';
     } elseif (preg_match('/mobile|phone|ipod|android|blackberry|webos|iemobile/i', $user_agent)) {
         $device_type = 'Mobile';
     }
 
-    // 3. Browser Detection
     if (preg_match('/edg|edge/i', $user_agent)) $browser = 'Microsoft Edge';
     elseif (preg_match('/samsungbrowser/i', $user_agent)) $browser = 'Samsung Internet';
     elseif (preg_match('/opr|opera/i', $user_agent)) $browser = 'Opera';
@@ -40,7 +35,6 @@ function detect_device_details($user_agent) {
     elseif (preg_match('/firefox|fxios/i', $user_agent)) $browser = 'Firefox';
     elseif (preg_match('/safari/i', $user_agent)) $browser = 'Safari';
 
-    // 4. Detailed Phone Model Extraction
     if (preg_match('/iPhone/i', $user_agent)) {
         $phone_model = 'Apple iPhone';
         if (preg_match('/iPhone\s?OS\s?([\d_]+)/i', $user_agent, $m)) {
@@ -84,7 +78,6 @@ function detect_device_details($user_agent) {
     ];
 }
 
-// Process Form Submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_rsvp'])) {
     $full_name = trim($_POST['full_name'] ?? '');
     $phone = trim($_POST['phone'] ?? '');
@@ -93,7 +86,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_rsvp'])) {
     $attendees_count = intval($_POST['attendees_count'] ?? 1);
     $inquiry = trim($_POST['inquiry'] ?? '');
 
-    // Collect additional attendees names if count > 1
     $additional_names = [];
     if ($attendees_count > 1) {
         for ($i = 2; $i <= $attendees_count; $i++) {
@@ -104,7 +96,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_rsvp'])) {
         }
     }
 
-    // Validation
     if (empty($full_name) || empty($phone)) {
         $error_msg = "Please enter both your Full Name and Phone Number to confirm attendance.";
     } elseif ($attendees_count > 1 && count($additional_names) < ($attendees_count - 1)) {
@@ -114,7 +105,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_rsvp'])) {
             $church_from = "Membley SDA Church";
         }
 
-        // IP Detection
         $ip = $_SERVER['REMOTE_ADDR'] ?? 'Unknown';
         if (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
             $ip = explode(',', $_SERVER['HTTP_X_FORWARDED_FOR'])[0];
@@ -123,11 +113,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_rsvp'])) {
         }
         $ip = trim($ip);
 
-        // User Agent & Device info
         $user_agent = $_SERVER['HTTP_USER_AGENT'] ?? 'Unknown';
         $device_info = detect_device_details($user_agent);
 
-        // Location & ISP
         $location = 'Kenya / Local';
         $network_isp = 'Internet Network';
         if ($ip !== '127.0.0.1' && $ip !== '::1' && $ip !== 'localhost' && $ip !== 'Unknown') {
@@ -144,7 +132,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_rsvp'])) {
             }
         }
 
-        // Prepare full attendee notes
         $notes_text = $inquiry;
         if (!empty($additional_names)) {
             $names_list = implode(", ", $additional_names);
@@ -185,7 +172,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_rsvp'])) {
 }
 ?>
 
-<!-- Banner Section -->
 <section style="background-color: var(--primary-dark); color: white; padding: 3rem 0; text-align: center; background-image: linear-gradient(rgba(0,26,53,0.9), rgba(0,26,53,0.9)), url('assets/images/church_banner.png'); background-size: cover; background-position: center;">
     <div class="container">
         <span style="background-color: var(--accent); color: var(--primary-dark); font-weight: 700; text-transform: uppercase; font-size: 0.8rem; padding: 0.35rem 0.85rem; border-radius: 4px; display: inline-block; margin-bottom: 0.75rem; letter-spacing: 0.5px;">
@@ -199,13 +185,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_rsvp'])) {
     </div>
 </section>
 
-<!-- Content Section -->
 <section class="section-padding container">
 
     <?php if ($submitted): ?>
         
-        <!-- Thank You Confirmation Card -->
-        <div class="rsvp-thankyou-card">
+                <div class="rsvp-thankyou-card">
             
             <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">🎉</div>
             
@@ -221,8 +205,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_rsvp'])) {
                 Your attendance for the <strong>Homecoming Sabbath (10 Yrs Celebration)</strong> is confirmed. We look forward to fellowshipping and praising God together with you!
             </p>
 
-            <!-- Scripture Quote Card -->
-            <div style="background-color: var(--primary-dark); color: #ffffff; border-left: 4px solid var(--accent); border-radius: 8px; padding: 1.5rem; margin: 1.5rem 0; text-align: left;">
+                        <div style="background-color: var(--primary-dark); color: #ffffff; border-left: 4px solid var(--accent); border-radius: 8px; padding: 1.5rem; margin: 1.5rem 0; text-align: left;">
                 <div style="font-family: var(--font-heading); font-size: 1.05rem; font-style: italic; line-height: 1.6; color: #f1f5f9; margin-bottom: 0.5rem;">
                     "Come, let us sing for joy to the Lord; let us shout aloud to the Rock of our salvation. Let us come before him with thanksgiving and extol him with music and song."
                 </div>
@@ -231,8 +214,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_rsvp'])) {
                 </div>
             </div>
 
-            <!-- Event Details Pill -->
-            <div style="background: #f8fafc; border: 1px solid var(--border-color); border-radius: 8px; padding: 1.25rem; margin: 1.5rem 0; text-align: left;">
+                        <div style="background: #f8fafc; border: 1px solid var(--border-color); border-radius: 8px; padding: 1.25rem; margin: 1.5rem 0; text-align: left;">
                 <h4 style="color: var(--primary); margin-bottom: 0.6rem; font-size: 0.95rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.4rem;">
                     <i class="fa-solid fa-location-dot" style="color: var(--accent);"></i> Event Information
                 </h4>
@@ -241,8 +223,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_rsvp'])) {
                 <p style="font-size: 0.9rem;"><strong>Venue:</strong> Membley Park Estate, Ruiru, Kenya</p>
             </div>
 
-            <!-- Action Buttons -->
-            <div style="display: flex; flex-direction: column; gap: 0.75rem; align-items: center;">
+                        <div style="display: flex; flex-direction: column; gap: 0.75rem; align-items: center;">
                 <a href="https://api.whatsapp.com/send?text=<?php echo urlencode("Hello! I just confirmed my attendance for the Membley SDA Homecoming Sabbath (Celebrating 10 Yrs of Fellowship & Family) on Oct 31, 2026. Will you be attending too? Register here: https://" . ($_SERVER['HTTP_HOST'] ?? 'membleyadventist.org') . "/rsvp.php"); ?>" target="_blank" class="btn-whatsapp-share" style="width: 100%; max-width: 380px;">
                     <i class="fa-brands fa-whatsapp" style="font-size: 1.25rem;"></i> Invite a Friend on WhatsApp
                 </a>
@@ -256,13 +237,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_rsvp'])) {
 
     <?php else: ?>
 
-        <!-- Event Poster Display (FULL UNCROPPED) -->
-        <div style="max-width: 480px; margin: 0 auto 2.5rem auto; text-align: center;">
+                <div style="max-width: 480px; margin: 0 auto 2.5rem auto; text-align: center;">
             <img src="assets/images/homecoming_flyer.png" alt="Homecoming Sabbath 10 Yrs Poster" class="flyer-poster-img">
         </div>
 
-        <!-- RSVP Form Box -->
-        <div class="rsvp-box-card" id="rsvpCard">
+                <div class="rsvp-box-card" id="rsvpCard">
             
             <?php if (!empty($error_msg)): ?>
                 <div style="background-color: #fee2e2; border: 1px solid #ef4444; color: #991b1b; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem;">
@@ -270,8 +249,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_rsvp'])) {
                 </div>
             <?php endif; ?>
 
-            <!-- Welcome Header -->
-            <div style="background: #f8fafc; border: 1px solid var(--border-color); border-radius: 8px; padding: 1rem 1.25rem; margin-bottom: 1.75rem; display: flex; align-items: center; gap: 0.85rem;">
+                        <div style="background: #f8fafc; border: 1px solid var(--border-color); border-radius: 8px; padding: 1rem 1.25rem; margin-bottom: 1.75rem; display: flex; align-items: center; gap: 0.85rem;">
                 <span style="font-size: 1.8rem;">😊</span>
                 <div>
                     <strong style="color: var(--primary); display: block; font-size: 1.05rem;">You are warmly welcomed!</strong>
@@ -279,23 +257,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_rsvp'])) {
                 </div>
             </div>
 
-            <!-- REGISTRATION FORM -->
-            <form action="rsvp.php" method="POST" id="mainRsvpForm">
+                        <form action="rsvp.php" method="POST" id="mainRsvpForm">
                 
-                <!-- 1. Full Name (Required) -->
-                <div class="form-group">
+                                <div class="form-group">
                     <label class="form-label" for="full_name">Your Full Name <span style="color: #e11d48;">*</span></label>
                     <input type="text" id="full_name" name="full_name" class="form-control" placeholder="e.g. John Doe / Sarah Mwangi" required value="<?php echo htmlspecialchars($_POST['full_name'] ?? ''); ?>">
                 </div>
 
-                <!-- 2. Phone Number (Required) -->
-                <div class="form-group">
+                                <div class="form-group">
                     <label class="form-label" for="phone">Phone Number <span style="color: #e11d48;">*</span></label>
                     <input type="tel" id="phone" name="phone" class="form-control" placeholder="e.g. 0712 345 678" required value="<?php echo htmlspecialchars($_POST['phone'] ?? ''); ?>">
                 </div>
 
-                <!-- 3. Member Status Choice -->
-                <div class="form-group">
+                                <div class="form-group">
                     <label class="form-label">Are you a Membley SDA Member?</label>
                     <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
                         <input type="hidden" name="is_membley_member" id="is_membley_member" value="<?php echo (isset($_POST['is_membley_member']) && $_POST['is_membley_member'] == 1) ? '1' : '0'; ?>">
@@ -308,14 +282,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_rsvp'])) {
                     </div>
                 </div>
 
-                <!-- 4. Manual Church Input -->
-                <div class="form-group" id="churchSection">
+                                <div class="form-group" id="churchSection">
                     <label class="form-label" for="church_from">Church / Congregation You Are From:</label>
                     <input type="text" id="church_from" name="church_from" class="form-control" placeholder="Type your church or home congregation (e.g. Ruiru SDA, Nairobi Central, Kahawa West, etc.)" value="<?php echo htmlspecialchars($_POST['church_from'] ?? ''); ?>">
                 </div>
 
-                <!-- 5. Number of Attendees -->
-                <div class="form-group">
+                                <div class="form-group">
                     <label class="form-label" for="attendees_count">Number of Attendees <small style="color: var(--text-muted); font-weight: normal;">(You + friends/family joining)</small></label>
                     <select id="attendees_count" name="attendees_count" class="form-control">
                         <option value="1" <?php echo (($_POST['attendees_count'] ?? 1) == 1) ? 'selected' : ''; ?>>1 Person (Just Me)</option>
@@ -326,24 +298,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_rsvp'])) {
                     </select>
                 </div>
 
-                <!-- Dynamic Additional Attendees Names Container -->
-                <div id="additionalAttendeesBox" style="display: none; background: #f8fafc; border: 1.5px dashed #cbd5e1; border-radius: 10px; padding: 1.25rem; margin-bottom: 1.5rem;">
+                                <div id="additionalAttendeesBox" style="display: none; background: #f8fafc; border: 1.5px dashed #cbd5e1; border-radius: 10px; padding: 1.25rem; margin-bottom: 1.5rem;">
                     <h4 style="color: var(--primary); font-size: 0.95rem; margin-bottom: 0.75rem;">
                         <i class="fa-solid fa-users" style="color: #84cc16;"></i> Please enter the names of additional attendees:
                     </h4>
                     <div id="additionalNamesInputs" style="display: flex; flex-direction: column; gap: 0.75rem;">
-                        <!-- Dynamically populated -->
-                    </div>
+                                            </div>
                 </div>
 
-                <!-- 6. Inquiry / Questions / Prayer Box (Editable) -->
-                <div class="form-group">
+                                <div class="form-group">
                     <label class="form-label" for="inquiry">Any Inquiries, Questions or Special Prayer Requests? <small style="color: var(--text-muted); font-weight: normal;">(Optional)</small></label>
                     <textarea id="inquiry" name="inquiry" class="form-control" rows="3" placeholder="Feel free to write any inquiry, question or special note here..."><?php echo htmlspecialchars($_POST['inquiry'] ?? ''); ?></textarea>
                 </div>
 
-                <!-- Submit Button -->
-                <div style="margin-top: 2rem;">
+                                <div style="margin-top: 2rem;">
                     <button type="submit" name="submit_rsvp" class="btn btn-lime" style="width: 100%; font-size: 1.1rem; padding: 0.95rem; justify-content: center;">
                         <i class="fa-solid fa-check-circle"></i> Confirm & Submit Attendance
                     </button>
@@ -367,7 +335,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const additionalBox = document.getElementById('additionalAttendeesBox');
     const additionalInputs = document.getElementById('additionalNamesInputs');
 
-    // 1. Membership toggle
     if (btnMemberYes && btnMemberVisitor) {
         btnMemberYes.addEventListener('click', function() {
             btnMemberYes.classList.add('active');
@@ -386,7 +353,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // 2. Dynamic Additional Attendee Names when count > 1
     function updateAttendeeFields() {
         if (!attendeesSelect || !additionalBox || !additionalInputs) return;
         const count = parseInt(attendeesSelect.value) || 1;
