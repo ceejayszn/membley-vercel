@@ -1,35 +1,55 @@
 <?php
 
-if (is_dir('/data') && is_writable('/data')) {
-    $db_file = '/data/church.db';
-    if (!file_exists($db_file) && file_exists(__DIR__ . '/church.db')) {
-        @copy(__DIR__ . '/church.db', $db_file);
-    }
-} else {
-    $db_file = __DIR__ . '/church.db';
-}
+$dbUrl = getenv('DATABASE_URL');
+$isPostgres = !empty($dbUrl);
 
 try {
-    $dsn = "sqlite:$db_file";
-    $pdo = new PDO($dsn, null, null, [
-        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-        PDO::ATTR_TIMEOUT => 5
-    ]);
+    if ($isPostgres) {
+        $parsedUrl = parse_url($dbUrl);
+        $host = $parsedUrl['host'];
+        $port = isset($parsedUrl['port']) ? $parsedUrl['port'] : 5432;
+        $user = $parsedUrl['user'];
+        $pass = $parsedUrl['pass'];
+        $dbname = ltrim($parsedUrl['path'], '/');
+        
+        $dsn = "pgsql:host=$host;port=$port;dbname=$dbname;sslmode=require";
+        $pdo = new PDO($dsn, $user, $pass, [
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+            PDO::ATTR_TIMEOUT => 5
+        ]);
+    } else {
+        if (is_dir('/data') && is_writable('/data')) {
+            $db_file = '/data/church.db';
+            if (!file_exists($db_file) && file_exists(__DIR__ . '/church.db')) {
+                @copy(__DIR__ . '/church.db', $db_file);
+            }
+        } else {
+            $db_file = __DIR__ . '/church.db';
+        }
+        $dsn = "sqlite:$db_file";
+        $pdo = new PDO($dsn, null, null, [
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+            PDO::ATTR_TIMEOUT => 5
+        ]);
+        
+        $pdo->exec("PRAGMA journal_mode=WAL");
+        $pdo->exec("PRAGMA foreign_keys=ON");
+    }
 
-    $pdo->exec("PRAGMA journal_mode=WAL");
-    $pdo->exec("PRAGMA foreign_keys=ON");
+    $pkType = $isPostgres ? 'SERIAL PRIMARY KEY' : 'INTEGER PRIMARY KEY AUTOINCREMENT';
+    $dateTimeType = $isPostgres ? 'TIMESTAMP' : 'DATETIME';
 
-    
     $pdo->exec("CREATE TABLE IF NOT EXISTS users (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        id $pkType,
         username TEXT UNIQUE NOT NULL,
         password TEXT NOT NULL,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        created_at $dateTimeType DEFAULT CURRENT_TIMESTAMP
     )");
 
     $pdo->exec("CREATE TABLE IF NOT EXISTS blogs (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        id $pkType,
         title TEXT NOT NULL,
         slug TEXT UNIQUE NOT NULL,
         content TEXT NOT NULL,
@@ -37,18 +57,18 @@ try {
         image_url TEXT,
         category TEXT DEFAULT 'General',
         status TEXT DEFAULT 'published',
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        created_at $dateTimeType DEFAULT CURRENT_TIMESTAMP
     )");
 
     $pdo->exec("CREATE TABLE IF NOT EXISTS blog_invites (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        id $pkType,
         token TEXT UNIQUE NOT NULL,
         is_used INTEGER DEFAULT 0,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        created_at $dateTimeType DEFAULT CURRENT_TIMESTAMP
     )");
 
     $pdo->exec("CREATE TABLE IF NOT EXISTS submissions (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        id $pkType,
         type TEXT NOT NULL, -- 'contact', 'prayer', 'pledge'
         name TEXT NOT NULL,
         email TEXT NOT NULL,
@@ -56,7 +76,7 @@ try {
         subject_message TEXT,
         amount REAL DEFAULT 0.00,
         status TEXT DEFAULT 'unread', -- 'unread', 'read', 'resolved'
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        created_at $dateTimeType DEFAULT CURRENT_TIMESTAMP
     )");
 
     $pdo->exec("CREATE TABLE IF NOT EXISTS analytics (
@@ -67,7 +87,7 @@ try {
     )");
 
     $pdo->exec("CREATE TABLE IF NOT EXISTS visitor_tracking (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        id $pkType,
         ip_address TEXT NOT NULL,
         user_agent TEXT NOT NULL,
         device_type TEXT,
@@ -75,12 +95,12 @@ try {
         location TEXT DEFAULT 'Unknown',
         network_isp TEXT DEFAULT 'Unknown',
         time_spent INTEGER DEFAULT 0,
-        last_seen DATETIME DEFAULT CURRENT_TIMESTAMP,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        last_seen $dateTimeType DEFAULT CURRENT_TIMESTAMP,
+        created_at $dateTimeType DEFAULT CURRENT_TIMESTAMP
     )");
 
     $pdo->exec("CREATE TABLE IF NOT EXISTS events (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        id $pkType,
         title TEXT NOT NULL,
         subtitle TEXT,
         description TEXT,
@@ -90,11 +110,11 @@ try {
         category TEXT DEFAULT 'General',
         is_featured INTEGER DEFAULT 0,
         image_url TEXT,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        created_at $dateTimeType DEFAULT CURRENT_TIMESTAMP
     )");
 
     $pdo->exec("CREATE TABLE IF NOT EXISTS event_rsvps (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        id $pkType,
         event_id INTEGER DEFAULT 1,
         event_title TEXT DEFAULT 'Homecoming Sabbath',
         full_name TEXT NOT NULL,
@@ -111,7 +131,7 @@ try {
         location TEXT DEFAULT 'Unknown',
         network_isp TEXT DEFAULT 'Unknown',
         user_agent TEXT,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        created_at $dateTimeType DEFAULT CURRENT_TIMESTAMP
     )");
 
     $stmtEvents = $pdo->query("SELECT COUNT(*) FROM events");
@@ -239,7 +259,7 @@ try {
     <body>
         <div class="error-card">
             <h1>Database Connection Required</h1>
-            <p>We are unable to connect to the SQLite database. Make sure the web server has write permissions to the <code>includes/</code> folder.</p>
+            <p>We are unable to connect to the database. Make sure your connection string is valid or local sqlite has write permissions.</p>
             <p><strong>Error Message:</strong> <code><?php echo htmlspecialchars($e->getMessage()); ?></code></p>
         </div>
     </body>
