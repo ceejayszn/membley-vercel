@@ -1,6 +1,6 @@
 <?php
 
-$dbUrl = getenv('DATABASE_URL');
+$dbUrl = getenv('DATABASE_URL') ?: getenv('POSTGRES_URL');
 $isPostgres = !empty($dbUrl);
 
 try {
