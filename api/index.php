@@ -12,7 +12,8 @@ $path = __DIR__ . '/../' . $file;
 
 if (file_exists($path) && is_file($path)) {
     if (pathinfo($path, PATHINFO_EXTENSION) === 'php') {
-        require $path;
+        chdir(dirname($path));
+        require basename($path);
     } else {
         $ext = pathinfo($path, PATHINFO_EXTENSION);
         $mime_types = [
@@ -31,9 +32,11 @@ if (file_exists($path) && is_file($path)) {
         readfile($path);
     }
 } elseif (file_exists($path . '.php')) {
-    require $path . '.php';
+    chdir(dirname($path . '.php'));
+    require basename($path . '.php');
 } elseif (file_exists($path . '/index.php')) {
-    require $path . '/index.php';
+    chdir(dirname($path . '/index.php'));
+    require basename($path . '/index.php');
 } else {
     http_response_code(404);
     echo "404 Not Found";
