@@ -19,14 +19,21 @@ try {
             PDO::ATTR_TIMEOUT => 5
         ]);
     } else {
-        if (is_dir('/data') && is_writable('/data')) {
+        $db_file = __DIR__ . '/church.db';
+        // Vercel and other Serverless platforms have read-only filesystems except for /tmp
+        if (!is_writable(dirname($db_file)) && is_dir('/tmp') && is_writable('/tmp')) {
+            $tmp_db = '/tmp/church.db';
+            if (!file_exists($tmp_db) && file_exists($db_file)) {
+                @copy($db_file, $tmp_db);
+            }
+            $db_file = $tmp_db;
+        } elseif (is_dir('/data') && is_writable('/data')) {
             $db_file = '/data/church.db';
             if (!file_exists($db_file) && file_exists(__DIR__ . '/church.db')) {
                 @copy(__DIR__ . '/church.db', $db_file);
             }
-        } else {
-            $db_file = __DIR__ . '/church.db';
         }
+
         $dsn = "sqlite:$db_file";
         $pdo = new PDO($dsn, null, null, [
             PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
