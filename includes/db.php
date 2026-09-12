@@ -231,15 +231,6 @@ try {
             ':username' => 'admin',
             ':password' => $defaultPassword
         ]);
-        $kaliPassword = password_hash('kali', PASSWORD_BCRYPT);
-        $insertUser->execute([
-            ':username' => 'ceejay',
-            ':password' => $kaliPassword
-        ]);
-        $insertUser->execute([
-            ':username' => 'edwin',
-            ':password' => $kaliPassword
-        ]);
         
         $seedBlogs = [
             [
@@ -281,6 +272,21 @@ try {
                 ':excerpt' => $b['excerpt'],
                 ':category' => $b['category']
             ]);
+        }
+    }
+
+    // Ensure all extra admin users exist safely (won't duplicate if they exist)
+    $ensureUsers = [
+        ['username' => 'ceejay', 'password' => password_hash('kali', PASSWORD_BCRYPT)],
+        ['username' => 'edwin', 'password' => password_hash('kali', PASSWORD_BCRYPT)],
+        ['username' => 'baruch', 'password' => password_hash('kali', PASSWORD_BCRYPT)]
+    ];
+    $insertUserSafe = $pdo->prepare("INSERT INTO users (username, password) VALUES (:username, :password)");
+    foreach ($ensureUsers as $u) {
+        try {
+            $insertUserSafe->execute([':username' => $u['username'], ':password' => $u['password']]);
+        } catch (PDOException $e) {
+            // Ignore unique constraint violation if user already exists
         }
     }
 
