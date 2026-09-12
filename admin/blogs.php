@@ -31,6 +31,23 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $excerpt = trim($_POST['excerpt'] ?? '');
     $content = trim($_POST['content'] ?? '');
     $image_url = trim($_POST['image_url'] ?? '');
+    $video_url = trim($_POST['video_url'] ?? '');
+    $author_name = trim($_POST['author_name'] ?? 'Membley Admin');
+    if (empty($author_name)) $author_name = 'Membley Admin';
+
+    if (isset($_FILES['cover_image']) && $_FILES['cover_image']['error'] == UPLOAD_ERR_OK) {
+        $upload_dir = '../assets/images/blogs/';
+        if (!is_dir($upload_dir)) {
+            mkdir($upload_dir, 0777, true);
+        }
+        $file_extension = pathinfo($_FILES['cover_image']['name'], PATHINFO_EXTENSION);
+        $new_filename = uniqid('blog_') . '.' . $file_extension;
+        $target_file = $upload_dir . $new_filename;
+        
+        if (move_uploaded_file($_FILES['cover_image']['tmp_name'], $target_file)) {
+            $image_url = 'assets/images/blogs/' . $new_filename;
+        }
+    }
 
     if (empty($title) || empty($content) || empty($excerpt)) {
         $error = 'Please fill in Title, Excerpt, and Content.';
@@ -45,13 +62,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     $slug .= '-' . time();
                 }
 
-                $stmt = $pdo->prepare("INSERT INTO blogs (title, slug, content, excerpt, image_url, category) VALUES (:title, :slug, :content, :excerpt, :image_url, :category)");
+                $stmt = $pdo->prepare("INSERT INTO blogs (title, slug, content, excerpt, image_url, video_url, author_name, category) VALUES (:title, :slug, :content, :excerpt, :image_url, :video_url, :author_name, :category)");
                 $stmt->execute([
                     ':title' => $title,
                     ':slug' => $slug,
                     ':content' => $content,
                     ':excerpt' => $excerpt,
                     ':image_url' => $image_url,
+                    ':video_url' => $video_url,
+                    ':author_name' => $author_name,
                     ':category' => $category
                 ]);
                 header('Location: blogs.php?msg=added');
@@ -61,12 +80,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             }
         } elseif ($action == 'edit' && $id > 0) {
             try {
-                $stmt = $pdo->prepare("UPDATE blogs SET title = :title, content = :content, excerpt = :excerpt, image_url = :image_url, category = :category WHERE id = :id");
+                $stmt = $pdo->prepare("UPDATE blogs SET title = :title, content = :content, excerpt = :excerpt, image_url = :image_url, video_url = :video_url, author_name = :author_name, category = :category WHERE id = :id");
                 $stmt->execute([
                     ':title' => $title,
                     ':content' => $content,
                     ':excerpt' => $excerpt,
                     ':image_url' => $image_url,
+                    ':video_url' => $video_url,
+                    ':author_name' => $author_name,
                     ':category' => $category,
                     ':id' => $id
                 ]);
@@ -161,10 +182,16 @@ if ($msg == 'deleted') $success = 'Blog post deleted successfully.';
                 <?php endif; ?>
 
                                 <?php if ($action == 'add' || $action == 'edit'): ?>
-                    <form action="blogs.php?action=<?php echo $action; ?><?php echo ($action == 'edit') ? '&id='.$id : ''; ?>" method="POST" class="admin-form">
-                        <div class="admin-form-group">
-                            <label class="admin-label" for="title">Post Title *</label>
-                            <input type="text" id="title" name="title" class="admin-input" placeholder="e.g. Preparing for Camp Meeting" value="<?php echo htmlspecialchars($post_data['title'] ?? ''); ?>" required>
+                    <form action="blogs.php?action=<?php echo $action; ?><?php echo ($action == 'edit') ? '&id='.$id : ''; ?>" method="POST" class="admin-form" enctype="multipart/form-data">
+                        <div class="admin-form-group" style="display: grid; grid-template-columns: 2fr 1fr; gap: 1rem;">
+                            <div>
+                                <label class="admin-label" for="title">Post Title *</label>
+                                <input type="text" id="title" name="title" class="admin-input" placeholder="e.g. Preparing for Camp Meeting" value="<?php echo htmlspecialchars($post_data['title'] ?? ''); ?>" required>
+                            </div>
+                            <div>
+                                <label class="admin-label" for="author_name">Author Name</label>
+                                <input type="text" id="author_name" name="author_name" class="admin-input" placeholder="e.g. Pr. John Doe" value="<?php echo htmlspecialchars($post_data['author_name'] ?? ''); ?>">
+                            </div>
                         </div>
                         <div class="admin-form-group">
                             <label class="admin-label" for="category">Category</label>
@@ -177,10 +204,19 @@ if ($msg == 'deleted') $success = 'Blog post deleted successfully.';
                                 <option value="Health Ministries" <?php echo (($post_data['category'] ?? '') == 'Health Ministries') ? 'selected' : ''; ?>>Health Ministries</option>
                             </select>
                         </div>
+                        <div class="admin-form-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                            <div>
+                                <label class="admin-label" for="cover_image">Feature Image Upload</label>
+                                <input type="file" id="cover_image" name="cover_image" accept="image/*" class="admin-input" style="padding: 0.5rem; background: var(--bg-light);">
+                            </div>
+                            <div>
+                                <label class="admin-label" for="image_url">OR Feature Image URL (Link)</label>
+                                <input type="url" id="image_url" name="image_url" class="admin-input" placeholder="https://images.unsplash.com/..." value="<?php echo htmlspecialchars($post_data['image_url'] ?? ''); ?>">
+                            </div>
+                        </div>
                         <div class="admin-form-group">
-                            <label class="admin-label" for="image_url">Feature Image URL</label>
-                            <input type="url" id="image_url" name="image_url" class="admin-input" placeholder="https://images.unsplash.com/..." value="<?php echo htmlspecialchars($post_data['image_url'] ?? ''); ?>">
-                            <small style="color: #637381; font-size: 0.8rem;">Leave blank to use default placeholder image.</small>
+                            <label class="admin-label" for="video_url">Video Embed URL (For Media TV)</label>
+                            <input type="url" id="video_url" name="video_url" class="admin-input" placeholder="https://www.youtube.com/embed/..." value="<?php echo htmlspecialchars($post_data['video_url'] ?? ''); ?>">
                         </div>
                         <div class="admin-form-group">
                             <label class="admin-label" for="excerpt">Brief Excerpt *</label>
