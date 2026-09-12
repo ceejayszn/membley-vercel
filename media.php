@@ -43,7 +43,8 @@ try {
                     </div>
                     
                     <div style="padding: 1.5rem; flex-grow: 1; display: flex; flex-direction: column;">
-                        <h3 style="font-size: 1.25rem; margin-bottom: 0.75rem; color: var(--text-dark); line-height: 1.4;"><?php echo htmlspecialchars($post['title']); ?></h3>
+                        <h3 style="font-size: 1.25rem; margin-bottom: 0.25rem; color: var(--text-dark); line-height: 1.4;"><?php echo htmlspecialchars($post['title']); ?></h3>
+                        <div style="font-size: 0.85rem; color: #64748b; margin-bottom: 0.75rem;"><i class="fa-solid fa-pen-fancy"></i> By <?php echo htmlspecialchars($post['author_name'] ?? 'Membley Admin'); ?></div>
                         <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 1.5rem; flex-grow: 1;"><?php echo htmlspecialchars($post['excerpt']); ?></p>
                         
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-top: auto; padding-top: 1rem; border-top: 1px solid var(--border-color);">

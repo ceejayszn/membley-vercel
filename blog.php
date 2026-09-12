@@ -38,7 +38,8 @@ try {
                     
                     <div style="padding: 1.5rem; flex-grow: 1; display: flex; flex-direction: column;">
                         <span style="font-size: 0.8rem; font-weight: 700; color: var(--primary-light); text-transform: uppercase; margin-bottom: 0.5rem;"><?php echo htmlspecialchars($blog['category']); ?></span>
-                        <h3 style="font-size: 1.25rem; margin-bottom: 0.75rem; color: var(--text-dark); line-height: 1.4;"><?php echo htmlspecialchars($blog['title']); ?></h3>
+                        <h3 style="font-size: 1.25rem; margin-bottom: 0.25rem; color: var(--text-dark); line-height: 1.4;"><?php echo htmlspecialchars($blog['title']); ?></h3>
+                        <div style="font-size: 0.85rem; color: #64748b; margin-bottom: 0.75rem;"><i class="fa-solid fa-pen-fancy"></i> By <?php echo htmlspecialchars($blog['author_name'] ?? 'Membley Admin'); ?></div>
                         <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 1.5rem; flex-grow: 1;"><?php echo htmlspecialchars($blog['excerpt']); ?></p>
                         <a href="blog-single.php?slug=<?php echo urlencode($blog['slug']); ?>" class="btn btn-outline" style="align-self: flex-start;">Read More</a>
                     </div>

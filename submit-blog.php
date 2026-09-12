@@ -53,14 +53,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && $valid_token) {
             }
 
             $video_url = trim($_POST['video_url'] ?? '');
+            $author_name = trim($_POST['author_name'] ?? 'Membley Admin');
+            if (empty($author_name)) { $author_name = 'Membley Admin'; }
 
-            $insert = $pdo->prepare("INSERT INTO blogs (title, slug, content, excerpt, category, image_url, video_url, status) VALUES (:title, :slug, :content, :excerpt, :category, :image_url, :video_url, 'review')");
+            $insert = $pdo->prepare("INSERT INTO blogs (title, slug, content, excerpt, category, author_name, image_url, video_url, status) VALUES (:title, :slug, :content, :excerpt, :category, :author_name, :image_url, :video_url, 'review')");
             $insert->execute([
                 ':title' => $title,
                 ':slug' => $slug,
                 ':content' => $content,
                 ':excerpt' => $excerpt,
                 ':category' => $category,
+                ':author_name' => $author_name,
                 ':image_url' => $image_url,
                 ':video_url' => $video_url
             ]);
@@ -94,9 +97,15 @@ require_once 'includes/header.php';
 
         <?php if ($valid_token): ?>
             <form method="post" action="submit-blog.php?token=<?php echo htmlspecialchars($token); ?>" id="blogForm" enctype="multipart/form-data">
-                <div style="margin-bottom: 1.5rem;">
-                    <label for="title" style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: var(--text-dark);">Post Title *</label>
-                    <input type="text" id="title" name="title" required style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 6px; font-size: 1rem;">
+                <div style="margin-bottom: 1.5rem; display: grid; grid-template-columns: 2fr 1fr; gap: 1rem;">
+                    <div>
+                        <label for="title" style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: var(--text-dark);">Post Title *</label>
+                        <input type="text" id="title" name="title" required style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 6px; font-size: 1rem;">
+                    </div>
+                    <div>
+                        <label for="author_name" style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: var(--text-dark);">Author Name</label>
+                        <input type="text" id="author_name" name="author_name" placeholder="E.g. Pr. John Doe" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 6px; font-size: 1rem;">
+                    </div>
                 </div>
 
                 <div style="margin-bottom: 1.5rem; display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">

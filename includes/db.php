@@ -65,6 +65,7 @@ try {
         image_url TEXT,
         video_url TEXT,
         category TEXT DEFAULT 'General',
+        author_name TEXT DEFAULT 'Membley Admin',
         status TEXT DEFAULT 'published',
         fake_likes INTEGER DEFAULT 0,
         real_views INTEGER DEFAULT 0,
@@ -77,6 +78,7 @@ try {
     try { $pdo->exec("ALTER TABLE blogs ADD COLUMN fake_likes INTEGER DEFAULT 0"); } catch (PDOException $e) {}
     try { $pdo->exec("ALTER TABLE blogs ADD COLUMN real_views INTEGER DEFAULT 0"); } catch (PDOException $e) {}
     try { $pdo->exec("ALTER TABLE blogs ADD COLUMN fake_views INTEGER DEFAULT 0"); } catch (PDOException $e) {}
+    try { $pdo->exec("ALTER TABLE blogs ADD COLUMN author_name TEXT DEFAULT 'Membley Admin'"); } catch (PDOException $e) {}
 
     $pdo->exec("CREATE TABLE IF NOT EXISTS blog_invites (
         id $pkType,

@@ -56,6 +56,7 @@ if ($post) {
         </span>
         <h1 style="color: white; font-size: 2.5rem; margin-bottom: 1rem; line-height: 1.2;"><?php echo htmlspecialchars($post['title']); ?></h1>
         <div style="font-size: 0.95rem; color: rgba(255,255,255,0.8); display: flex; align-items: center; justify-content: center; gap: 1.5rem;">
+            <span><i class="fa-solid fa-pen-fancy"></i> By <?php echo htmlspecialchars($post['author_name'] ?? 'Membley Admin'); ?></span>
             <span><i class="fa-regular fa-calendar"></i> Published on <?php echo date('F d, Y', strtotime($post['created_at'])); ?></span>
             <span><i class="fa-solid fa-eye"></i> <?php echo ($post['real_views'] ?? 0) + ($post['fake_views'] ?? 0); ?> Views</span>
         </div>
