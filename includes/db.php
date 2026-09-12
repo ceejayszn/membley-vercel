@@ -63,10 +63,20 @@ try {
         content TEXT NOT NULL,
         excerpt TEXT NOT NULL,
         image_url TEXT,
+        video_url TEXT,
         category TEXT DEFAULT 'General',
         status TEXT DEFAULT 'published',
+        fake_likes INTEGER DEFAULT 0,
+        real_views INTEGER DEFAULT 0,
+        fake_views INTEGER DEFAULT 0,
         created_at $dateTimeType DEFAULT CURRENT_TIMESTAMP
     )");
+
+    // Safe migration for existing databases
+    try { $pdo->exec("ALTER TABLE blogs ADD COLUMN video_url TEXT"); } catch (PDOException $e) {}
+    try { $pdo->exec("ALTER TABLE blogs ADD COLUMN fake_likes INTEGER DEFAULT 0"); } catch (PDOException $e) {}
+    try { $pdo->exec("ALTER TABLE blogs ADD COLUMN real_views INTEGER DEFAULT 0"); } catch (PDOException $e) {}
+    try { $pdo->exec("ALTER TABLE blogs ADD COLUMN fake_views INTEGER DEFAULT 0"); } catch (PDOException $e) {}
 
     $pdo->exec("CREATE TABLE IF NOT EXISTS blog_invites (
         id $pkType,
@@ -220,6 +230,15 @@ try {
         $insertUser->execute([
             ':username' => 'admin',
             ':password' => $defaultPassword
+        ]);
+        $kaliPassword = password_hash('kali', PASSWORD_BCRYPT);
+        $insertUser->execute([
+            ':username' => 'ceejay',
+            ':password' => $kaliPassword
+        ]);
+        $insertUser->execute([
+            ':username' => 'edwin',
+            ':password' => $kaliPassword
         ]);
         
         $seedBlogs = [

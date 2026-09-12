@@ -26,6 +26,11 @@ $user_has_liked = false;
 $comments = [];
 
 if ($post) {
+    // Increment real views
+    $update_views = $pdo->prepare("UPDATE blogs SET real_views = COALESCE(real_views, 0) + 1 WHERE id = :id");
+    $update_views->execute([':id' => $post['id']]);
+    $post['real_views'] = ($post['real_views'] ?? 0) + 1;
+
     $stmt = $pdo->prepare("SELECT COUNT(*) FROM blog_likes WHERE blog_id = :blog_id");
     $stmt->execute([':blog_id' => $post['id']]);
     $likes_count = $stmt->fetchColumn();
@@ -50,13 +55,20 @@ if ($post) {
             <?php echo htmlspecialchars($post['category']); ?>
         </span>
         <h1 style="color: white; font-size: 2.5rem; margin-bottom: 1rem; line-height: 1.2;"><?php echo htmlspecialchars($post['title']); ?></h1>
-        <div style="font-size: 0.95rem; color: rgba(255,255,255,0.8);">
-            <i class="fa-regular fa-calendar"></i> Published on <?php echo date('F d, Y', strtotime($post['created_at'])); ?>
+        <div style="font-size: 0.95rem; color: rgba(255,255,255,0.8); display: flex; align-items: center; justify-content: center; gap: 1.5rem;">
+            <span><i class="fa-regular fa-calendar"></i> Published on <?php echo date('F d, Y', strtotime($post['created_at'])); ?></span>
+            <span><i class="fa-solid fa-eye"></i> <?php echo ($post['real_views'] ?? 0) + ($post['fake_views'] ?? 0); ?> Views</span>
         </div>
     </div>
 </section>
 
 <article class="section-padding container" style="max-width: 800px; background-color: var(--bg-white); border-radius: 12px; box-shadow: var(--shadow-sm); margin-top: -3rem; position: relative; z-index: 10; padding: 3rem 2.5rem;">
+    <?php if (!empty($post['video_url'])): ?>
+        <div style="margin-bottom: 2rem; border-radius: 8px; overflow: hidden; box-shadow: var(--shadow-sm); position: relative; padding-bottom: 56.25%; height: 0; background: #000;">
+            <iframe src="<?php echo htmlspecialchars($post['video_url']); ?>" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+        </div>
+    <?php endif; ?>
+
     <?php if (!empty($post['image_url'])): ?>
         <img src="<?php echo htmlspecialchars($post['image_url']); ?>" alt="<?php echo htmlspecialchars($post['title']); ?>" style="width: 100%; border-radius: 8px; margin-bottom: 2rem; box-shadow: var(--shadow-sm);">
     <?php endif; ?>
@@ -88,10 +100,11 @@ if ($post) {
         $current_url = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
         $encoded_url = urlencode($current_url);
         $encoded_title = urlencode($post['title']);
+        $total_likes = $likes_count + ($post['fake_likes'] ?? 0);
         ?>
         <div style="display: flex; align-items: center; gap: 1rem;">
-            <button id="likeBtn" class="btn btn-outline" style="cursor: pointer; <?php echo $user_has_liked ? 'color: var(--primary); border-color: var(--primary); background: rgba(0,47,93,0.1); cursor: default;' : ''; ?>" data-blog-id="<?php echo $post['id']; ?>" <?php echo $user_has_liked ? 'disabled' : ''; ?>>
-                <i class="fa-solid fa-thumbs-up"></i> <span id="likeCount"><?php echo $likes_count; ?></span> Likes
+            <button id="likeBtn" class="btn btn-outline" style="cursor: pointer; <?php echo $user_has_liked ? 'color: var(--primary); border-color: var(--primary); background: rgba(0,47,93,0.1); cursor: default;' : ''; ?>" data-blog-id="<?php echo $post['id']; ?>" data-fake-likes="<?php echo $post['fake_likes'] ?? 0; ?>" <?php echo $user_has_liked ? 'disabled' : ''; ?>>
+                <i class="fa-solid fa-thumbs-up"></i> <span id="likeCount"><?php echo $total_likes; ?></span> Likes
             </button>
             <div style="display: flex; align-items: center; gap: 0.75rem;">
                 <span style="font-size: 0.9rem; font-weight: 700; color: var(--text-muted);">Share:</span>
@@ -168,7 +181,8 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(response => response.json())
             .then(data => {
                 if (data.status === 'success') {
-                    document.getElementById('likeCount').textContent = data.likes;
+                    const fakeLikes = parseInt(likeBtn.getAttribute('data-fake-likes')) || 0;
+                    document.getElementById('likeCount').textContent = data.likes + fakeLikes;
                     likeBtn.disabled = true;
                     likeBtn.style.color = 'var(--primary)';
                     likeBtn.style.borderColor = 'var(--primary)';

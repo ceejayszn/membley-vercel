@@ -22,8 +22,12 @@ if (empty($page) || !in_array($type, ['view', 'click', 'time'])) {
 }
 
 try {
-    $stmt = $pdo->prepare("INSERT OR IGNORE INTO analytics (page, views, clicks, time_spent) VALUES (:page, 0, 0, 0)");
-    $stmt->execute([':page' => $page]);
+    $check = $pdo->prepare("SELECT page FROM analytics WHERE page = :page");
+    $check->execute([':page' => $page]);
+    if (!$check->fetch()) {
+        $stmt = $pdo->prepare("INSERT INTO analytics (page, views, clicks, time_spent) VALUES (:page, 0, 0, 0)");
+        $stmt->execute([':page' => $page]);
+    }
 
     if ($type === 'view') {
         $stmt = $pdo->prepare("UPDATE analytics SET views = views + 1 WHERE page = :page");

@@ -171,7 +171,9 @@ if ($msg == 'deleted') $success = 'Blog post deleted successfully.';
                             <select id="category" name="category" class="admin-select" style="background-color: white;">
                                 <option value="Announcements" <?php echo (($post_data['category'] ?? '') == 'Announcements') ? 'selected' : ''; ?>>Announcements</option>
                                 <option value="Sermons" <?php echo (($post_data['category'] ?? '') == 'Sermons') ? 'selected' : ''; ?>>Sermons</option>
-                                <option value="Youth & Kids" <?php echo (($post_data['category'] ?? '') == 'Youth & Kids') ? 'selected' : ''; ?>>Youth & Kids</option>
+                                <option value="Youth" <?php echo (($post_data['category'] ?? '') == 'Youth') ? 'selected' : ''; ?>>Youth</option>
+                                <option value="Kids" <?php echo (($post_data['category'] ?? '') == 'Kids') ? 'selected' : ''; ?>>Kids</option>
+                                <option value="Media TV" <?php echo (($post_data['category'] ?? '') == 'Media TV') ? 'selected' : ''; ?>>Media TV</option>
                                 <option value="Health Ministries" <?php echo (($post_data['category'] ?? '') == 'Health Ministries') ? 'selected' : ''; ?>>Health Ministries</option>
                             </select>
                         </div>

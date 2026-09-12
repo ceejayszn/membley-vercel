@@ -36,8 +36,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && $valid_token) {
         try {
             $pdo->beginTransaction();
 
-            // Handle Cover Image Upload
-            $image_url = '';
+            // Handle Cover Image Upload or Link
+            $image_url = trim($_POST['image_link'] ?? '');
             if (isset($_FILES['cover_image']) && $_FILES['cover_image']['error'] == UPLOAD_ERR_OK) {
                 $upload_dir = 'assets/images/blogs/';
                 if (!is_dir($upload_dir)) {
@@ -52,14 +52,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && $valid_token) {
                 }
             }
 
-            $insert = $pdo->prepare("INSERT INTO blogs (title, slug, content, excerpt, category, image_url, status) VALUES (:title, :slug, :content, :excerpt, :category, :image_url, 'review')");
+            $video_url = trim($_POST['video_url'] ?? '');
+
+            $insert = $pdo->prepare("INSERT INTO blogs (title, slug, content, excerpt, category, image_url, video_url, status) VALUES (:title, :slug, :content, :excerpt, :category, :image_url, :video_url, 'review')");
             $insert->execute([
                 ':title' => $title,
                 ':slug' => $slug,
                 ':content' => $content,
                 ':excerpt' => $excerpt,
                 ':category' => $category,
-                ':image_url' => $image_url
+                ':image_url' => $image_url,
+                ':video_url' => $video_url
             ]);
 
             $update_token = $pdo->prepare("UPDATE blog_invites SET is_used = 1 WHERE id = :id");
@@ -106,6 +109,7 @@ require_once 'includes/header.php';
                             <option value="Kids">Kids</option>
                             <option value="Announcements">Announcements</option>
                             <option value="Ministries">Ministries</option>
+                            <option value="Media TV">Media TV</option>
                         </select>
                     </div>
                     <div>
@@ -114,9 +118,21 @@ require_once 'includes/header.php';
                     </div>
                 </div>
 
+                <div style="margin-bottom: 1.5rem; display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div>
+                        <label for="cover_image" style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: var(--text-dark);">Cover Image Upload (Optional)</label>
+                        <input type="file" id="cover_image" name="cover_image" accept="image/*" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 6px; font-size: 1rem; background: var(--bg-light);">
+                    </div>
+                    <div>
+                        <label for="image_link" style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: var(--text-dark);">OR Image Link (Optional)</label>
+                        <input type="url" id="image_link" name="image_link" placeholder="https://..." style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 6px; font-size: 1rem;">
+                    </div>
+                </div>
+
                 <div style="margin-bottom: 1.5rem;">
-                    <label for="cover_image" style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: var(--text-dark);">Cover Image (Optional)</label>
-                    <input type="file" id="cover_image" name="cover_image" accept="image/*" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 6px; font-size: 1rem; background: var(--bg-light);">
+                    <label for="video_url" style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: var(--text-dark);">Video Embed URL (For Media TV)</label>
+                    <input type="url" id="video_url" name="video_url" placeholder="https://www.youtube.com/embed/..." style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 6px; font-size: 1rem;">
+                    <small style="color: var(--text-muted);">Use the embed URL for YouTube, Vimeo, etc.</small>
                 </div>
 
                 <div style="margin-bottom: 2rem;">
