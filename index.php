@@ -143,9 +143,9 @@ try {
                         </div>
 
                                                 <div class="flyer-poster-wrapper">
-                            <?php if (!empty($event['image_url']) && file_exists(__DIR__ . '/' . $event['image_url'])): ?>
+                            <?php if (!empty($event['image_url'])): ?>
                                 <a href="events.php" title="Click to view event details and RSVP" style="display: block; width: 100%; max-width: 440px; text-decoration: none;">
-                                    <img src="<?php echo htmlspecialchars($event['image_url']); ?>" alt="<?php echo htmlspecialchars($event['title']); ?>" class="flyer-poster-img">
+                                    <img src="<?php echo htmlspecialchars(strpos($event['image_url'], 'http') === 0 ? $event['image_url'] : '/' . ltrim($event['image_url'], '/')); ?>" alt="<?php echo htmlspecialchars($event['title']); ?>" class="flyer-poster-img">
                                 </a>
                             <?php else: ?>
                                 <a href="events.php" style="text-decoration: none; display: block; width: 100%;">

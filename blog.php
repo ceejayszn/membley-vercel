@@ -29,7 +29,7 @@ try {
             <?php foreach ($blogs as $blog): ?>
                 <div style="background: white; border-radius: 12px; overflow: hidden; box-shadow: var(--shadow-sm); display: flex; flex-direction: column; transition: transform 0.3s ease;">
                     <?php if (!empty($blog['image_url'])): ?>
-                        <div style="height: 200px; background-image: url('<?php echo htmlspecialchars($blog['image_url']); ?>'); background-size: cover; background-position: center;"></div>
+                        <div style="height: 200px; background-image: url('<?php echo htmlspecialchars(strpos($blog['image_url'], 'http') === 0 ? $blog['image_url'] : '/' . ltrim($blog['image_url'], '/')); ?>'); background-size: cover; background-position: center;"></div>
                     <?php else: ?>
                         <div style="height: 200px; background: var(--primary-dark); display: flex; align-items: center; justify-content: center;">
                             <i class="fa-solid fa-church" style="font-size: 4rem; color: rgba(255,255,255,0.1);"></i>

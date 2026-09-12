@@ -83,7 +83,7 @@ try {
                             </div>
 
                                                         <div class="flyer-poster-wrapper">
-                                <?php if (!empty($event['image_url']) && file_exists(__DIR__ . '/' . $event['image_url'])): ?>
+                                <?php if (!empty($event['image_url'])): ?>
                                     <a href="rsvp.php" title="Click to RSVP & Confirm Attendance" style="display: block; width: 100%; max-width: 440px; text-decoration: none;">
                                         <img src="<?php echo htmlspecialchars($event['image_url']); ?>" alt="<?php echo htmlspecialchars($event['title']); ?>" class="flyer-poster-img">
                                     </a>
@@ -139,7 +139,7 @@ try {
                             <p style="font-size: 0.95rem; color: var(--text-dark); line-height: 1.5;"><?php echo htmlspecialchars($event['description']); ?></p>
                         </div>
                         <?php if (!empty($event['image_url'])): ?>
-                            <div style="width: 140px; height: 130px; flex-shrink: 0; border-radius: 8px; background-image: url('<?php echo htmlspecialchars($event['image_url']); ?>'); background-size: cover; background-position: center; border: 1px solid var(--border-color);">
+                            <div style="width: 140px; height: 130px; flex-shrink: 0; border-radius: 8px; background-image: url('<?php echo htmlspecialchars(strpos($event['image_url'], 'http') === 0 ? $event['image_url'] : '/' . ltrim($event['image_url'], '/')); ?>'); background-size: cover; background-position: center; border: 1px solid var(--border-color);">
                             </div>
                         <?php endif; ?>
                     </div>

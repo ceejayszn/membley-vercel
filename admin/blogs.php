@@ -36,20 +36,26 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (empty($author_name)) $author_name = 'Membley Admin';
 
     if (isset($_FILES['cover_image']) && $_FILES['cover_image']['error'] == UPLOAD_ERR_OK) {
-        $upload_dir = '../assets/images/blogs/';
-        // Ensure directory exists and is writable before attempting to move file
-        if (is_dir($upload_dir) && is_writable($upload_dir)) {
-            $file_extension = pathinfo($_FILES['cover_image']['name'], PATHINFO_EXTENSION);
-            $new_filename = uniqid('blog_') . '.' . $file_extension;
-            $target_file = rtrim($upload_dir, '/') . '/' . $new_filename;
-            if (move_uploaded_file($_FILES['cover_image']['tmp_name'], $target_file)) {
-                $image_url = 'assets/images/blogs/' . $new_filename;
-            } else {
-                $error = 'Image upload failed; using provided URL if set.';
-            }
+        // Enforce max upload size (2 MB)
+        $maxSize = 2 * 1024 * 1024; // 2 MB
+        if ($_FILES['cover_image']['size'] > $maxSize) {
+            $error = 'Image too large (max 2 MB). Please use a smaller file or provide an image URL.';
         } else {
-            // Directory not writable – skip upload, rely on URL field
-            $error = 'Image upload directory not writable; please provide an image URL.';
+            $upload_dir = '../assets/images/blogs/';
+            // Ensure directory exists and is writable before attempting to move file
+            if (is_dir($upload_dir) && is_writable($upload_dir)) {
+                $file_extension = pathinfo($_FILES['cover_image']['name'], PATHINFO_EXTENSION);
+                $new_filename = uniqid('blog_') . '.' . $file_extension;
+                $target_file = rtrim($upload_dir, '/') . '/' . $new_filename;
+                if (move_uploaded_file($_FILES['cover_image']['tmp_name'], $target_file)) {
+                    $image_url = '/assets/images/blogs/' . $new_filename;
+                } else {
+                    $error = 'Image upload failed; using provided URL if set.';
+                }
+            } else {
+                // Directory not writable – skip upload, rely on URL field
+                $error = 'Image upload directory not writable; please provide an image URL.';
+            }
         }
     }
 
