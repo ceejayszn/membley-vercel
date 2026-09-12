@@ -75,6 +75,23 @@ try {
         created_at $dateTimeType DEFAULT CURRENT_TIMESTAMP
     )");
 
+    $pdo->exec("CREATE TABLE IF NOT EXISTS blog_comments (
+        id $pkType,
+        blog_id INTEGER NOT NULL,
+        author_name TEXT NOT NULL,
+        content TEXT NOT NULL,
+        device_id TEXT NOT NULL,
+        created_at $dateTimeType DEFAULT CURRENT_TIMESTAMP
+    )");
+
+    $pdo->exec("CREATE TABLE IF NOT EXISTS blog_likes (
+        id $pkType,
+        blog_id INTEGER NOT NULL,
+        device_id TEXT NOT NULL,
+        created_at $dateTimeType DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(blog_id, device_id)
+    )");
+
     $pdo->exec("CREATE TABLE IF NOT EXISTS submissions (
         id $pkType,
         type TEXT NOT NULL, -- 'contact', 'prayer', 'pledge'

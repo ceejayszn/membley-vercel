@@ -1,4 +1,11 @@
 <?php
+if (!isset($_COOKIE['device_id'])) {
+    $device_id = bin2hex(random_bytes(16));
+    setcookie('device_id', $device_id, time() + (86400 * 365), "/"); // 1 year
+} else {
+    $device_id = $_COOKIE['device_id'];
+}
+
 require_once 'includes/db.php';
 require_once 'includes/header.php';
 
@@ -14,7 +21,23 @@ if (!empty($slug)) {
     }
 }
 
-if (!$post) {
+$likes_count = 0;
+$user_has_liked = false;
+$comments = [];
+
+if ($post) {
+    $stmt = $pdo->prepare("SELECT COUNT(*) FROM blog_likes WHERE blog_id = :blog_id");
+    $stmt->execute([':blog_id' => $post['id']]);
+    $likes_count = $stmt->fetchColumn();
+
+    $stmt = $pdo->prepare("SELECT id FROM blog_likes WHERE blog_id = :blog_id AND device_id = :device_id");
+    $stmt->execute([':blog_id' => $post['id'], ':device_id' => $device_id]);
+    $user_has_liked = (bool)$stmt->fetch();
+
+    $stmt = $pdo->prepare("SELECT * FROM blog_comments WHERE blog_id = :blog_id ORDER BY created_at DESC");
+    $stmt->execute([':blog_id' => $post['id']]);
+    $comments = $stmt->fetchAll();
+} else {
     echo "<div class='container section-padding' style='text-align: center;'><h2>Blog Post Not Found</h2><p><a href='blog.php'>Return to Blog</a></p></div>";
     require_once 'includes/footer.php';
     exit;
@@ -58,16 +81,171 @@ if (!$post) {
         <?php endif; ?>
     </div>
 
-        <div style="border-top: 1px solid var(--border-color); margin-top: 3rem; padding-top: 2rem; display: flex; justify-content: space-between; align-items: center;">
+    <div style="border-top: 1px solid var(--border-color); margin-top: 3rem; padding-top: 2rem; display: flex; justify-content: space-between; align-items: center;">
         <a href="blog.php" class="btn btn-outline"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
         
-                <div style="display: flex; align-items: center; gap: 0.75rem;">
-            <span style="font-size: 0.9rem; font-weight: 700; color: var(--text-muted);">Share:</span>
-            <a href="#" style="color: #3b5998;"><i class="fa-brands fa-facebook-f"></i></a>
-            <a href="#" style="color: #1da1f2;"><i class="fa-brands fa-twitter"></i></a>
-            <a href="#" style="color: #25d366;"><i class="fa-brands fa-whatsapp"></i></a>
+        <?php
+        $current_url = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
+        $encoded_url = urlencode($current_url);
+        $encoded_title = urlencode($post['title']);
+        ?>
+        <div style="display: flex; align-items: center; gap: 1rem;">
+            <button id="likeBtn" class="btn btn-outline" style="cursor: pointer; <?php echo $user_has_liked ? 'color: var(--primary); border-color: var(--primary); background: rgba(0,47,93,0.1); cursor: default;' : ''; ?>" data-blog-id="<?php echo $post['id']; ?>" <?php echo $user_has_liked ? 'disabled' : ''; ?>>
+                <i class="fa-solid fa-thumbs-up"></i> <span id="likeCount"><?php echo $likes_count; ?></span> Likes
+            </button>
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <span style="font-size: 0.9rem; font-weight: 700; color: var(--text-muted);">Share:</span>
+                <a href="https://www.facebook.com/sharer/sharer.php?u=<?php echo $encoded_url; ?>" target="_blank" style="color: #3b5998;"><i class="fa-brands fa-facebook-f"></i></a>
+                <a href="https://twitter.com/intent/tweet?url=<?php echo $encoded_url; ?>&text=<?php echo $encoded_title; ?>" target="_blank" style="color: #1da1f2;"><i class="fa-brands fa-twitter"></i></a>
+                <a href="https://api.whatsapp.com/send?text=<?php echo $encoded_title; ?>%20<?php echo $encoded_url; ?>" target="_blank" style="color: #25d366;"><i class="fa-brands fa-whatsapp"></i></a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Comments Section -->
+    <div style="margin-top: 4rem; padding-top: 2rem; border-top: 1px solid var(--border-color);">
+        <h3 style="margin-bottom: 1.5rem;"><i class="fa-regular fa-comments"></i> Comments (<span id="commentCount"><?php echo count($comments); ?></span>)</h3>
+        
+        <div style="background: var(--bg-light); padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem;">
+            <h4 style="margin-top: 0; margin-bottom: 1rem;">Leave a Comment</h4>
+            <form id="commentForm">
+                <input type="hidden" id="blog_id" value="<?php echo $post['id']; ?>">
+                <div style="margin-bottom: 1rem;">
+                    <input type="text" id="commentAuthor" placeholder="Your Name" required style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 6px; font-family: inherit; font-size: 1rem;">
+                </div>
+                <div style="margin-bottom: 1rem;">
+                    <textarea id="commentContent" placeholder="Your Comment..." required rows="4" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 6px; resize: vertical; font-family: inherit; font-size: 1rem;"></textarea>
+                </div>
+                <button type="submit" id="submitComment" class="btn btn-primary" style="padding: 0.75rem 1.5rem; border-radius: 6px;">Post Comment</button>
+            </form>
+            <div id="commentError" style="color: #dc2626; margin-top: 0.5rem; display: none; font-size: 0.9rem;"></div>
+        </div>
+
+        <div id="commentsList" style="display: flex; flex-direction: column; gap: 1.5rem;">
+            <?php foreach($comments as $c): ?>
+                <div style="background: white; padding: 1.5rem; border-radius: 8px; border: 1px solid var(--border-color);">
+                    <div style="font-weight: bold; margin-bottom: 0.5rem; display: flex; justify-content: space-between;">
+                        <span><i class="fa-solid fa-user-circle" style="color: var(--text-muted);"></i> <?php echo htmlspecialchars($c['author_name']); ?></span>
+                        <span style="font-size: 0.85rem; color: var(--text-muted); font-weight: normal;"><?php echo date('M d, Y', strtotime($c['created_at'])); ?></span>
+                    </div>
+                    <div style="color: var(--text-dark); line-height: 1.6;">
+                        <?php echo nl2br(htmlspecialchars($c['content'])); ?>
+                    </div>
+                </div>
+            <?php endforeach; ?>
+            <?php if(empty($comments)): ?>
+                <p id="noComments" style="color: var(--text-muted);">No comments yet. Be the first to share your thoughts!</p>
+            <?php endif; ?>
         </div>
     </div>
 </article>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    function getCookie(name) {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return parts.pop().split(';').shift();
+        return '';
+    }
+    const deviceId = getCookie('device_id');
+
+    // Handle Likes
+    const likeBtn = document.getElementById('likeBtn');
+    if (likeBtn && !likeBtn.disabled) {
+        likeBtn.addEventListener('click', function() {
+            const blogId = this.getAttribute('data-blog-id');
+            const formData = new URLSearchParams();
+            formData.append('action', 'like');
+            formData.append('blog_id', blogId);
+            formData.append('device_id', deviceId);
+
+            fetch('api/blog_interact.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: formData.toString()
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    document.getElementById('likeCount').textContent = data.likes;
+                    likeBtn.disabled = true;
+                    likeBtn.style.color = 'var(--primary)';
+                    likeBtn.style.borderColor = 'var(--primary)';
+                    likeBtn.style.background = 'rgba(0,47,93,0.1)';
+                    likeBtn.style.cursor = 'default';
+                }
+            });
+        });
+    }
+
+    // Handle Comments
+    const commentForm = document.getElementById('commentForm');
+    if (commentForm) {
+        commentForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const btn = document.getElementById('submitComment');
+            btn.disabled = true;
+            btn.textContent = 'Posting...';
+            
+            const blogId = document.getElementById('blog_id').value;
+            const author = document.getElementById('commentAuthor').value;
+            const content = document.getElementById('commentContent').value;
+
+            const formData = new URLSearchParams();
+            formData.append('action', 'comment');
+            formData.append('blog_id', blogId);
+            formData.append('device_id', deviceId);
+            formData.append('author_name', author);
+            formData.append('content', content);
+
+            fetch('api/blog_interact.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: formData.toString()
+            })
+            .then(response => response.json())
+            .then(data => {
+                btn.disabled = false;
+                btn.textContent = 'Post Comment';
+                if (data.status === 'success') {
+                    // Prepend new comment
+                    const commentsList = document.getElementById('commentsList');
+                    const noComments = document.getElementById('noComments');
+                    if (noComments) noComments.remove();
+
+                    const newCommentHtml = `
+                        <div style="background: white; padding: 1.5rem; border-radius: 8px; border: 1px solid var(--border-color);">
+                            <div style="font-weight: bold; margin-bottom: 0.5rem; display: flex; justify-content: space-between;">
+                                <span><i class="fa-solid fa-user-circle" style="color: var(--text-muted);"></i> ${data.comment.author}</span>
+                                <span style="font-size: 0.85rem; color: var(--text-muted); font-weight: normal;">Just now</span>
+                            </div>
+                            <div style="color: var(--text-dark); line-height: 1.6;">
+                                ${data.comment.content}
+                            </div>
+                        </div>
+                    `;
+                    commentsList.insertAdjacentHTML('afterbegin', newCommentHtml);
+                    
+                    // Update count
+                    const countSpan = document.getElementById('commentCount');
+                    countSpan.textContent = parseInt(countSpan.textContent) + 1;
+                    
+                    // Clear form
+                    commentForm.reset();
+                } else {
+                    const err = document.getElementById('commentError');
+                    err.textContent = data.message;
+                    err.style.display = 'block';
+                }
+            })
+            .catch(() => {
+                btn.disabled = false;
+                btn.textContent = 'Post Comment';
+            });
+        });
+    }
+});
+</script>
 
 <?php require_once 'includes/footer.php'; ?>

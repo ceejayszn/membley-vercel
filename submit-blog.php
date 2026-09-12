@@ -36,13 +36,30 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && $valid_token) {
         try {
             $pdo->beginTransaction();
 
-            $insert = $pdo->prepare("INSERT INTO blogs (title, slug, content, excerpt, category, status) VALUES (:title, :slug, :content, :excerpt, :category, 'review')");
+            // Handle Cover Image Upload
+            $image_url = '';
+            if (isset($_FILES['cover_image']) && $_FILES['cover_image']['error'] == UPLOAD_ERR_OK) {
+                $upload_dir = 'assets/images/blogs/';
+                if (!is_dir($upload_dir)) {
+                    mkdir($upload_dir, 0777, true);
+                }
+                $file_extension = pathinfo($_FILES['cover_image']['name'], PATHINFO_EXTENSION);
+                $new_filename = uniqid('blog_') . '.' . $file_extension;
+                $target_file = $upload_dir . $new_filename;
+                
+                if (move_uploaded_file($_FILES['cover_image']['tmp_name'], $target_file)) {
+                    $image_url = $target_file;
+                }
+            }
+
+            $insert = $pdo->prepare("INSERT INTO blogs (title, slug, content, excerpt, category, image_url, status) VALUES (:title, :slug, :content, :excerpt, :category, :image_url, 'review')");
             $insert->execute([
                 ':title' => $title,
                 ':slug' => $slug,
                 ':content' => $content,
                 ':excerpt' => $excerpt,
-                ':category' => $category
+                ':category' => $category,
+                ':image_url' => $image_url
             ]);
 
             $update_token = $pdo->prepare("UPDATE blog_invites SET is_used = 1 WHERE id = :id");
@@ -73,7 +90,7 @@ require_once 'includes/header.php';
         <?php echo $message; ?>
 
         <?php if ($valid_token): ?>
-            <form method="post" action="submit-blog.php?token=<?php echo htmlspecialchars($token); ?>" id="blogForm">
+            <form method="post" action="submit-blog.php?token=<?php echo htmlspecialchars($token); ?>" id="blogForm" enctype="multipart/form-data">
                 <div style="margin-bottom: 1.5rem;">
                     <label for="title" style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: var(--text-dark);">Post Title *</label>
                     <input type="text" id="title" name="title" required style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 6px; font-size: 1rem;">
@@ -85,7 +102,8 @@ require_once 'includes/header.php';
                         <select id="category" name="category" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 6px; font-size: 1rem;">
                             <option value="General">General</option>
                             <option value="Sermons">Sermons</option>
-                            <option value="Youth & Kids">Youth & Kids</option>
+                            <option value="Youth">Youth</option>
+                            <option value="Kids">Kids</option>
                             <option value="Announcements">Announcements</option>
                             <option value="Ministries">Ministries</option>
                         </select>
@@ -94,6 +112,11 @@ require_once 'includes/header.php';
                         <label for="excerpt" style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: var(--text-dark);">Short Excerpt (Optional)</label>
                         <input type="text" id="excerpt" name="excerpt" placeholder="A brief summary..." style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 6px; font-size: 1rem;">
                     </div>
+                </div>
+
+                <div style="margin-bottom: 1.5rem;">
+                    <label for="cover_image" style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: var(--text-dark);">Cover Image (Optional)</label>
+                    <input type="file" id="cover_image" name="cover_image" accept="image/*" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 6px; font-size: 1rem; background: var(--bg-light);">
                 </div>
 
                 <div style="margin-bottom: 2rem;">
