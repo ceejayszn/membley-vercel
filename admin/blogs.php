@@ -35,11 +35,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $author_name = trim($_POST['author_name'] ?? 'Membley Admin');
     if (empty($author_name)) $author_name = 'Membley Admin';
 
+    $upload_error = '';
     if (isset($_FILES['cover_image']) && $_FILES['cover_image']['error'] == UPLOAD_ERR_OK) {
-        // Enforce max upload size (2 MB)
-        $maxSize = 2 * 1024 * 1024; // 2 MB
+        // Enforce max upload size (2 MB)
+        $maxSize = 2 * 1024 * 1024; // 2 MB
         if ($_FILES['cover_image']['size'] > $maxSize) {
-            $error = 'Image too large (max 2 MB). Please use a smaller file or provide an image URL.';
+            $upload_error = 'Image too large (max 2 MB). Please use a smaller file or provide an image URL.';
         } else {
             $upload_dir = '../assets/images/blogs/';
             // Ensure directory exists and is writable before attempting to move file
@@ -50,13 +51,18 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 if (move_uploaded_file($_FILES['cover_image']['tmp_name'], $target_file)) {
                     $image_url = '/assets/images/blogs/' . $new_filename;
                 } else {
-                    $error = 'Image upload failed; using provided URL if set.';
+                    $upload_error = 'Image upload failed.';
                 }
             } else {
-                // Directory not writable – skip upload, rely on URL field
-                $error = 'Image upload directory not writable; please provide an image URL.';
+                // Directory not writable (e.g. Vercel) – fall through to URL field
+                $upload_error = 'Server does not support file uploads. Please use an image URL instead.';
             }
         }
+    }
+
+    // Show upload error only if no URL was provided as fallback
+    if (!empty($upload_error) && empty($image_url)) {
+        $error = $upload_error;
     }
 
     if (empty($title) || empty($content) || empty($excerpt)) {
@@ -218,10 +224,12 @@ if ($msg == 'deleted') $success = 'Blog post deleted successfully.';
                             <div>
                                 <label class="admin-label" for="cover_image">Feature Image Upload</label>
                                 <input type="file" id="cover_image" name="cover_image" accept="image/*" class="admin-input" style="padding: 0.5rem; background: var(--bg-light);">
+                                <small style="color: #94a3b8; display: block; margin-top: 0.25rem;">File upload works on local servers only.</small>
                             </div>
                             <div>
-                                <label class="admin-label" for="image_url">OR Feature Image URL (Link)</label>
+                                <label class="admin-label" for="image_url">Feature Image URL (Link) <span style="color: #16a34a; font-weight: 700;">✓ Recommended</span></label>
                                 <input type="url" id="image_url" name="image_url" class="admin-input" placeholder="https://images.unsplash.com/..." value="<?php echo htmlspecialchars($post_data['image_url'] ?? ''); ?>">
+                                <small style="color: #94a3b8; display: block; margin-top: 0.25rem;">Paste a direct image link. Works on all servers including Vercel.</small>
                             </div>
                         </div>
                         <div class="admin-form-group">

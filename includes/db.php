@@ -183,7 +183,7 @@ try {
                 'location' => 'Membley Park Estate, Ruiru, Kenya',
                 'category' => '10th Anniversary Convocation',
                 'is_featured' => 1,
-                'image_url' => 'assets/images/homecoming_flyer.png'
+                'image_url' => '/assets/images/homecoming_flyer.png'
             ],
             [
                 'title' => 'Annual Church Camp Meeting 2026',
@@ -205,7 +205,7 @@ try {
                 'location' => 'KIMAKIA Forest, Murang\'a',
                 'category' => 'Youth / AY',
                 'is_featured' => 0,
-                'image_url' => 'assets/images/hike_photo.jpg'
+                'image_url' => '/assets/images/hike_photo.jpg'
             ]
         ];
 
