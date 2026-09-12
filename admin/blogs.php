@@ -37,15 +37,19 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     if (isset($_FILES['cover_image']) && $_FILES['cover_image']['error'] == UPLOAD_ERR_OK) {
         $upload_dir = '../assets/images/blogs/';
-        if (!is_dir($upload_dir)) {
-            mkdir($upload_dir, 0777, true);
-        }
-        $file_extension = pathinfo($_FILES['cover_image']['name'], PATHINFO_EXTENSION);
-        $new_filename = uniqid('blog_') . '.' . $file_extension;
-        $target_file = $upload_dir . $new_filename;
-        
-        if (move_uploaded_file($_FILES['cover_image']['tmp_name'], $target_file)) {
-            $image_url = 'assets/images/blogs/' . $new_filename;
+        // Ensure directory exists and is writable before attempting to move file
+        if (is_dir($upload_dir) && is_writable($upload_dir)) {
+            $file_extension = pathinfo($_FILES['cover_image']['name'], PATHINFO_EXTENSION);
+            $new_filename = uniqid('blog_') . '.' . $file_extension;
+            $target_file = rtrim($upload_dir, '/') . '/' . $new_filename;
+            if (move_uploaded_file($_FILES['cover_image']['tmp_name'], $target_file)) {
+                $image_url = 'assets/images/blogs/' . $new_filename;
+            } else {
+                $error = 'Image upload failed; using provided URL if set.';
+            }
+        } else {
+            // Directory not writable – skip upload, rely on URL field
+            $error = 'Image upload directory not writable; please provide an image URL.';
         }
     }
 
