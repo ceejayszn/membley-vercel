@@ -350,17 +350,30 @@ try {
  * @throws Exception If upload fails or token is missing
  */
 function uploadToVercelBlob($filePath, $destinationName) {
-    // Vercel serverless may expose env vars via $_ENV, $_SERVER, or getenv()
     $token = null;
-    $varNames = ['membleyvercelstorage_READ_WRITE_TOKEN', 'BLOB_READ_WRITE_TOKEN'];
+    $varNames = ['BLOB_READ_WRITE_TOKEN', 'membleyvercelstorage_READ_WRITE_TOKEN'];
     foreach ($varNames as $varName) {
         if (!empty($_ENV[$varName])) { $token = $_ENV[$varName]; break; }
         if (!empty($_SERVER[$varName])) { $token = $_SERVER[$varName]; break; }
         $val = getenv($varName);
         if (!empty($val)) { $token = $val; break; }
     }
+    
+    // Dynamic fallback: scan $_ENV and $_SERVER for any variable ending with READ_WRITE_TOKEN
     if (!$token) {
-        throw new Exception("Vercel Blob token is missing. Please configure BLOB_READ_WRITE_TOKEN in Vercel.");
+        $combined = array_merge($_SERVER ?? [], $_ENV ?? []);
+        foreach ($combined as $key => $val) {
+            if (is_string($key) && is_string($val) && (stripos($key, 'READ_WRITE_TOKEN') !== false || stripos($key, 'BLOB_TOKEN') !== false)) {
+                if (!empty($val)) {
+                    $token = $val;
+                    break;
+                }
+            }
+        }
+    }
+    
+    if (!$token) {
+        throw new Exception("Vercel Blob token is missing. If you just added environment variables in Vercel, you MUST trigger a NEW deployment (Deployments -> ... -> Redeploy) for the environment variables to take effect.");
     }
     
     $ch = curl_init();
