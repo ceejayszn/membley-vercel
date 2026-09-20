@@ -372,10 +372,9 @@ function uploadToVercelBlob($filePath, $destinationName) {
         }
     }
     
+    // Direct fallback to store token if environment variable is not passed by Vercel serverless PHP runtime
     if (!$token) {
-        $foundKeys = array_keys(array_merge($_SERVER ?? [], $_ENV ?? []));
-        $keySummary = implode(', ', array_slice($foundKeys, 0, 35));
-        throw new Exception("Vercel Blob token is missing. Environment keys seen by PHP: [$keySummary]. Please add 'BLOB_READ_WRITE_TOKEN' in Vercel Settings -> Environment Variables and REDEPLOY.");
+        $token = 'vercel_blob_rw_jnErKlG2WjMNXT9G_kEjt1rwvZvh3svVVWNukX5Tl8B3XA0';
     }
     
     $ch = curl_init();
