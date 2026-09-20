@@ -21,31 +21,77 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         try {
             $pdo->beginTransaction();
 
-            $image_url = trim($_POST['image_url'] ?? '');
-            if (isset($_FILES['featured_image']) && $_FILES['featured_image']['error'] == UPLOAD_ERR_OK) {
-                $allowed_types = ['image/jpeg', 'image/png', 'image/webp'];
-                $file_type = mime_content_type($_FILES['featured_image']['tmp_name']);
-                
-                if (in_array($file_type, $allowed_types) && $_FILES['featured_image']['size'] <= 5000000) {
-                    $ext = pathinfo($_FILES['featured_image']['name'], PATHINFO_EXTENSION);
-                    $new_filename = 'submissions/' . uniqid('img_') . '.' . $ext;
-                    $image_url = uploadToVercelBlob($_FILES['featured_image']['tmp_name'], $new_filename);
-                } else {
-                    throw new Exception("Invalid image file or file too large (Max 5MB).");
-                }
+            // 1. Process Images (Multiple & Single Uploads)
+            $uploaded_images = [];
+            $image_url_input = trim($_POST['image_url'] ?? '');
+            if (!empty($image_url_input)) {
+                $uploaded_images[] = $image_url_input;
             }
 
-            $attachment_url = trim($_POST['attachment_url'] ?? '');
-            if (isset($_FILES['attachment']) && $_FILES['attachment']['error'] == UPLOAD_ERR_OK) {
-                $file_type = mime_content_type($_FILES['attachment']['tmp_name']);
-                if ($file_type == 'application/pdf' && $_FILES['attachment']['size'] <= 10000000) {
-                    $ext = pathinfo($_FILES['attachment']['name'], PATHINFO_EXTENSION);
-                    $new_filename = 'submissions/' . uniqid('doc_') . '.' . $ext;
-                    $attachment_url = uploadToVercelBlob($_FILES['attachment']['tmp_name'], $new_filename);
-                } else {
-                    throw new Exception("Attachment must be a PDF and under 10MB.");
+            if (isset($_FILES['featured_images']) && !empty($_FILES['featured_images']['name'][0])) {
+                $count = count($_FILES['featured_images']['name']);
+                for ($i = 0; $i < $count; $i++) {
+                    if ($_FILES['featured_images']['error'][$i] == UPLOAD_ERR_OK) {
+                        $tmp_name = $_FILES['featured_images']['tmp_name'][$i];
+                        $name = $_FILES['featured_images']['name'][$i];
+                        $size = $_FILES['featured_images']['size'][$i];
+                        $allowed_types = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+                        $file_type = mime_content_type($tmp_name);
+                        
+                        if (in_array($file_type, $allowed_types) && $size <= 15000000) {
+                            $ext = pathinfo($name, PATHINFO_EXTENSION);
+                            $new_filename = 'submissions/' . uniqid('img_') . '.' . $ext;
+                            $url = uploadToVercelBlob($tmp_name, $new_filename);
+                            if ($url) $uploaded_images[] = $url;
+                        } else {
+                            throw new Exception("File '$name' is not a supported image or exceeds 15MB limit.");
+                        }
+                    }
                 }
             }
+            if (isset($_FILES['featured_image']) && $_FILES['featured_image']['error'] == UPLOAD_ERR_OK) {
+                $ext = pathinfo($_FILES['featured_image']['name'], PATHINFO_EXTENSION);
+                $url = uploadToVercelBlob($_FILES['featured_image']['tmp_name'], 'submissions/' . uniqid('img_') . '.' . $ext);
+                if ($url) $uploaded_images[] = $url;
+            }
+
+            $image_db_val = empty($uploaded_images) ? '' : json_encode(array_values($uploaded_images));
+
+            // 2. Process Documents (Multiple Formats: PDF, Word, Excel, PowerPoint, ZIP, TXT, CSV, etc.)
+            $uploaded_docs = [];
+            $doc_url_input = trim($_POST['attachment_url'] ?? '');
+            if (!empty($doc_url_input)) {
+                $uploaded_docs[] = $doc_url_input;
+            }
+
+            if (isset($_FILES['attachments']) && !empty($_FILES['attachments']['name'][0])) {
+                $count = count($_FILES['attachments']['name']);
+                $allowed_extensions = ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'txt', 'csv', 'rtf', 'zip', 'rar', 'odt', 'ods', 'pages'];
+                
+                for ($i = 0; $i < $count; $i++) {
+                    if ($_FILES['attachments']['error'][$i] == UPLOAD_ERR_OK) {
+                        $tmp_name = $_FILES['attachments']['tmp_name'][$i];
+                        $name = $_FILES['attachments']['name'][$i];
+                        $size = $_FILES['attachments']['size'][$i];
+                        $ext = strtolower(pathinfo($name, PATHINFO_EXTENSION));
+                        
+                        if (in_array($ext, $allowed_extensions) && $size <= 25000000) {
+                            $new_filename = 'submissions/' . uniqid('doc_') . '.' . $ext;
+                            $url = uploadToVercelBlob($tmp_name, $new_filename);
+                            if ($url) $uploaded_docs[] = $url;
+                        } else {
+                            throw new Exception("Document '$name' format (.$ext) is not supported or exceeds 25MB limit.");
+                        }
+                    }
+                }
+            }
+            if (isset($_FILES['attachment']) && $_FILES['attachment']['error'] == UPLOAD_ERR_OK) {
+                $ext = strtolower(pathinfo($_FILES['attachment']['name'], PATHINFO_EXTENSION));
+                $url = uploadToVercelBlob($_FILES['attachment']['tmp_name'], 'submissions/' . uniqid('doc_') . '.' . $ext);
+                if ($url) $uploaded_docs[] = $url;
+            }
+
+            $doc_db_val = empty($uploaded_docs) ? '' : json_encode(array_values($uploaded_docs));
 
             $insert = $pdo->prepare("
                 INSERT INTO content_submissions 
@@ -61,8 +107,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 ':title' => $title,
                 ':summary' => $summary,
                 ':content' => $content,
-                ':image' => $image_url,
-                ':attachment' => $attachment_url
+                ':image' => $image_db_val,
+                ':attachment' => $doc_db_val
             ]);
 
             $pdo->commit();
@@ -161,21 +207,26 @@ require_once 'includes/header.php';
 
                 <h3 style="margin-bottom: 1rem; color: var(--primary); border-bottom: 2px solid #f1f5f9; padding-bottom: 0.5rem;">Images & Documents</h3>
 
-                <div style="margin-bottom: 1.5rem; display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                    <div>
-                        <label for="featured_image" style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: var(--text-dark);">Featured Image Upload (Optional)</label>
-                        <input type="file" id="featured_image" name="featured_image" accept="image/jpeg,image/png,image/webp" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 6px; font-size: 0.9rem; background: var(--bg-light);">
-                        <small style="color: var(--text-muted); display: block; margin-top: 0.25rem;">JPG, PNG, WebP (Max 5MB).</small>
+                <div style="margin-bottom: 1.5rem; display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                    <div style="background: #f8fafc; padding: 1.25rem; border-radius: 8px; border: 1px solid #e2e8f0;">
+                        <label for="featured_images" style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: var(--text-dark);">
+                            <i class="fa-solid fa-images" style="color: var(--primary); margin-right: 0.4rem;"></i> Upload Images (Select Multiple)
+                        </label>
+                        <input type="file" id="featured_images" name="featured_images[]" multiple accept="image/jpeg,image/png,image/webp,image/gif" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 6px; font-size: 0.9rem; background: white;">
+                        <small style="color: var(--text-muted); display: block; margin-top: 0.4rem;">JPG, PNG, WebP, GIF (Hold Ctrl/Cmd or Shift to select multiple images).</small>
                         
-                        <label for="image_url" style="display: block; font-weight: 600; margin-bottom: 0.5rem; margin-top: 1rem; color: var(--text-dark);">OR Image URL</label>
+                        <label for="image_url" style="display: block; font-weight: 600; margin-bottom: 0.5rem; margin-top: 1rem; color: var(--text-dark);">OR Image Link / URL</label>
                         <input type="url" id="image_url" name="image_url" placeholder="https://example.com/image.jpg" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 6px; font-size: 0.9rem;">
                     </div>
-                    <div>
-                        <label for="attachment" style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: var(--text-dark);">Supporting PDF Upload (Optional)</label>
-                        <input type="file" id="attachment" name="attachment" accept="application/pdf" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 6px; font-size: 0.9rem; background: var(--bg-light);">
-                        <small style="color: var(--text-muted); display: block; margin-top: 0.25rem;">PDF only (Max 10MB).</small>
+
+                    <div style="background: #f8fafc; padding: 1.25rem; border-radius: 8px; border: 1px solid #e2e8f0;">
+                        <label for="attachments" style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: var(--text-dark);">
+                            <i class="fa-solid fa-folder-open" style="color: var(--primary); margin-right: 0.4rem;"></i> Upload Documents (Select Multiple)
+                        </label>
+                        <input type="file" id="attachments" name="attachments[]" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv,.rtf,.zip,.rar,.odt,.ods,.pages" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 6px; font-size: 0.9rem; background: white;">
+                        <small style="color: var(--text-muted); display: block; margin-top: 0.4rem;">PDF, Word, Excel, PowerPoint, TXT, CSV, ZIP, RAR, RTF (Max 25MB each).</small>
                         
-                        <label for="attachment_url" style="display: block; font-weight: 600; margin-bottom: 0.5rem; margin-top: 1rem; color: var(--text-dark);">OR Document URL</label>
+                        <label for="attachment_url" style="display: block; font-weight: 600; margin-bottom: 0.5rem; margin-top: 1rem; color: var(--text-dark);">OR Document Link / URL</label>
                         <input type="url" id="attachment_url" name="attachment_url" placeholder="https://example.com/doc.pdf" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 6px; font-size: 0.9rem;">
                     </div>
                 </div>

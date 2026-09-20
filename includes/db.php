@@ -423,3 +423,27 @@ function get_media_url($path, $is_admin = false) {
     $clean_path = ltrim($path, '/');
     return $is_admin ? '../' . $clean_path : '/' . $clean_path;
 }
+
+/**
+ * Returns a direct download endpoint URL for a given media file or URL.
+ * Ensures mobile and desktop browsers save the file directly to device downloads.
+ */
+function get_download_url($path, $is_admin = false) {
+    if (empty($path)) return '';
+    $raw_url = get_media_url($path, false);
+    $prefix = $is_admin ? '../' : '';
+    return $prefix . 'download.php?url=' . urlencode($raw_url);
+}
+
+/**
+ * Parses single or multi-file image/document fields into a standard array of URLs.
+ */
+function parse_media_list($str) {
+    if (empty($str)) return [];
+    $decoded = json_decode($str, true);
+    if (is_array($decoded)) return array_filter(array_map('trim', $decoded));
+    if (strpos($str, ',') !== false) {
+        return array_filter(array_map('trim', explode(',', $str)));
+    }
+    return [trim($str)];
+}

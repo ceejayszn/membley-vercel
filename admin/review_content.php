@@ -155,20 +155,33 @@ if (!$submission) {
                             </p>
                         <?php endif; ?>
 
-                        <?php if(!empty($submission['featured_image'])): 
-                            $img_url = get_media_url($submission['featured_image'], true);
+                        <?php 
+                        $images_list = parse_media_list($submission['featured_image']);
+                        if (!empty($images_list)): 
                         ?>
-                            <div style="margin-bottom: 1.5rem; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 1rem; text-align: center;">
-                                <div style="margin-bottom: 1rem; max-height: 480px; overflow: hidden; display: flex; align-items: center; justify-content: center; background: #0f172a; border-radius: 6px;">
-                                    <img src="<?php echo htmlspecialchars($img_url); ?>" alt="Featured Image" style="max-width: 100%; max-height: 480px; object-fit: contain;">
-                                </div>
-                                <div style="display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap;">
-                                    <a href="<?php echo htmlspecialchars($img_url); ?>" target="_blank" class="admin-btn-outline" style="font-size: 0.85rem; padding: 0.5rem 1rem;">
-                                        <i class="fa-solid fa-arrow-up-right-from-square" style="margin-right: 0.4rem;"></i> Open Full Image
-                                    </a>
-                                    <a href="<?php echo htmlspecialchars($img_url); ?>" download target="_blank" class="admin-btn" style="font-size: 0.85rem; padding: 0.5rem 1rem; background-color: var(--primary); text-decoration: none;">
-                                        <i class="fa-solid fa-download" style="margin-right: 0.4rem;"></i> Download Image
-                                    </a>
+                            <div style="margin-bottom: 2rem;">
+                                <h4 style="margin-bottom: 0.75rem; color: var(--text-dark); border-bottom: 1px solid #e2e8f0; padding-bottom: 0.4rem;">
+                                    <i class="fa-solid fa-images" style="color: var(--primary); margin-right: 0.4rem;"></i> Submitted Images (<?php echo count($images_list); ?>)
+                                </h4>
+                                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem;">
+                                    <?php foreach ($images_list as $index => $img_path): 
+                                        $img_url = get_media_url($img_path, true);
+                                        $download_url = get_download_url($img_path, true);
+                                    ?>
+                                        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 0.75rem; text-align: center;">
+                                            <div style="margin-bottom: 0.75rem; height: 180px; overflow: hidden; display: flex; align-items: center; justify-content: center; background: #0f172a; border-radius: 6px;">
+                                                <img src="<?php echo htmlspecialchars($img_url); ?>" alt="Image <?php echo $index + 1; ?>" style="max-width: 100%; max-height: 180px; object-fit: contain;">
+                                            </div>
+                                            <div style="display: flex; gap: 0.5rem; justify-content: center;">
+                                                <a href="<?php echo htmlspecialchars($img_url); ?>" target="_blank" class="admin-btn-outline" style="font-size: 0.8rem; padding: 0.35rem 0.65rem;">
+                                                    <i class="fa-solid fa-arrow-up-right-from-square" style="margin-right: 0.2rem;"></i> Open
+                                                </a>
+                                                <a href="<?php echo htmlspecialchars($download_url); ?>" class="admin-btn" style="font-size: 0.8rem; padding: 0.35rem 0.65rem; background-color: var(--primary); text-decoration: none;">
+                                                    <i class="fa-solid fa-download" style="margin-right: 0.2rem;"></i> Download
+                                                </a>
+                                            </div>
+                                        </div>
+                                    <?php endforeach; ?>
                                 </div>
                             </div>
                         <?php endif; ?>
@@ -177,21 +190,48 @@ if (!$submission) {
                             <?php echo $submission['content']; // Raw HTML from rich text ?>
                         </div>
 
-                        <?php if(!empty($submission['attachment'])): 
-                            $doc_url = get_media_url($submission['attachment'], true);
+                        <?php 
+                        $docs_list = parse_media_list($submission['attachment']);
+                        if (!empty($docs_list)): 
                         ?>
-                            <div style="background: #f8fafc; padding: 1.25rem; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 1.5rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
-                                <div style="display: flex; align-items: center;">
-                                    <i class="fa-solid fa-file-pdf" style="color: #ef4444; font-size: 1.5rem; margin-right: 0.75rem;"></i> 
-                                    <strong style="color: var(--text-dark);">Attached Document / PDF</strong>
-                                </div>
-                                <div style="display: flex; gap: 0.5rem;">
-                                    <a href="<?php echo htmlspecialchars($doc_url); ?>" target="_blank" class="admin-btn-outline" style="font-size: 0.85rem; padding: 0.45rem 0.85rem;">
-                                        <i class="fa-solid fa-eye" style="margin-right: 0.3rem;"></i> View PDF
-                                    </a>
-                                    <a href="<?php echo htmlspecialchars($doc_url); ?>" download target="_blank" class="admin-btn" style="font-size: 0.85rem; padding: 0.45rem 0.85rem; background-color: var(--primary); text-decoration: none;">
-                                        <i class="fa-solid fa-download" style="margin-right: 0.3rem;"></i> Download PDF
-                                    </a>
+                            <div style="margin-bottom: 2rem;">
+                                <h4 style="margin-bottom: 0.75rem; color: var(--text-dark); border-bottom: 1px solid #e2e8f0; padding-bottom: 0.4rem;">
+                                    <i class="fa-solid fa-folder-open" style="color: var(--primary); margin-right: 0.4rem;"></i> Attached Documents (<?php echo count($docs_list); ?>)
+                                </h4>
+                                <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                                    <?php foreach ($docs_list as $index => $doc_path): 
+                                        $doc_url = get_media_url($doc_path, true);
+                                        $download_url = get_download_url($doc_path, true);
+                                        $filename = basename(parse_url($doc_path, PHP_URL_PATH));
+                                        $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+                                        
+                                        $icon_class = 'fa-file';
+                                        $icon_color = '#64748b';
+                                        if (in_array($ext, ['pdf'])) { $icon_class = 'fa-file-pdf'; $icon_color = '#ef4444'; }
+                                        elseif (in_array($ext, ['doc', 'docx', 'odt'])) { $icon_class = 'fa-file-word'; $icon_color = '#2563eb'; }
+                                        elseif (in_array($ext, ['xls', 'xlsx', 'csv', 'ods'])) { $icon_class = 'fa-file-excel'; $icon_color = '#16a34a'; }
+                                        elseif (in_array($ext, ['ppt', 'pptx'])) { $icon_class = 'fa-file-powerpoint'; $icon_color = '#ea580c'; }
+                                        elseif (in_array($ext, ['zip', 'rar'])) { $icon_class = 'fa-file-zipper'; $icon_color = '#8b5cf6'; }
+                                        elseif (in_array($ext, ['txt', 'rtf'])) { $icon_class = 'fa-file-lines'; $icon_color = '#475569'; }
+                                    ?>
+                                        <div style="background: #f8fafc; padding: 1rem; border-radius: 8px; border: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem;">
+                                            <div style="display: flex; align-items: center; gap: 0.75rem; max-width: 60%; word-break: break-all;">
+                                                <i class="fa-solid <?php echo $icon_class; ?>" style="color: <?php echo $icon_color; ?>; font-size: 1.5rem;"></i> 
+                                                <div>
+                                                    <strong style="color: var(--text-dark); font-size: 0.95rem; display: block;"><?php echo htmlspecialchars($filename); ?></strong>
+                                                    <span style="font-size: 0.75rem; color: #64748b; text-transform: uppercase;"><?php echo $ext ?: 'FILE'; ?> Document</span>
+                                                </div>
+                                            </div>
+                                            <div style="display: flex; gap: 0.5rem;">
+                                                <a href="<?php echo htmlspecialchars($doc_url); ?>" target="_blank" class="admin-btn-outline" style="font-size: 0.8rem; padding: 0.4rem 0.75rem;">
+                                                    <i class="fa-solid fa-eye" style="margin-right: 0.3rem;"></i> View
+                                                </a>
+                                                <a href="<?php echo htmlspecialchars($download_url); ?>" class="admin-btn" style="font-size: 0.8rem; padding: 0.4rem 0.75rem; background-color: var(--primary); text-decoration: none;">
+                                                    <i class="fa-solid fa-download" style="margin-right: 0.3rem;"></i> Download
+                                                </a>
+                                            </div>
+                                        </div>
+                                    <?php endforeach; ?>
                                 </div>
                             </div>
                         <?php endif; ?>
