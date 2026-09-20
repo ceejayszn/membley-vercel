@@ -350,13 +350,15 @@ try {
  * @throws Exception If upload fails or token is missing
  */
 function uploadToVercelBlob($filePath, $destinationName) {
-    // Vercel exposes env vars via $_SERVER, $_ENV, or getenv — check all
-    $token = $_SERVER['membleyvercelstorage_READ_WRITE_TOKEN'] 
-          ?? $_ENV['membleyvercelstorage_READ_WRITE_TOKEN'] 
-          ?? $_SERVER['BLOB_READ_WRITE_TOKEN'] 
-          ?? $_ENV['BLOB_READ_WRITE_TOKEN'] 
-          ?? getenv('membleyvercelstorage_READ_WRITE_TOKEN') 
-          ?: getenv('BLOB_READ_WRITE_TOKEN');
+    // Vercel serverless may expose env vars via $_ENV, $_SERVER, or getenv()
+    $token = null;
+    $varNames = ['membleyvercelstorage_READ_WRITE_TOKEN', 'BLOB_READ_WRITE_TOKEN'];
+    foreach ($varNames as $varName) {
+        if (!empty($_ENV[$varName])) { $token = $_ENV[$varName]; break; }
+        if (!empty($_SERVER[$varName])) { $token = $_SERVER[$varName]; break; }
+        $val = getenv($varName);
+        if (!empty($val)) { $token = $val; break; }
+    }
     if (!$token) {
         throw new Exception("Vercel Blob token is missing. Please configure BLOB_READ_WRITE_TOKEN in Vercel.");
     }
