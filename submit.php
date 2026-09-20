@@ -23,25 +23,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
             $image_url = trim($_POST['image_url'] ?? '');
             if (isset($_FILES['featured_image']) && $_FILES['featured_image']['error'] == UPLOAD_ERR_OK) {
-                $upload_dir = 'assets/images/submissions/';
-                if (!is_dir($upload_dir)) {
-                    if (!@mkdir($upload_dir, 0777, true)) {
-                        throw new Exception("File uploads are disabled on this server. Please use an Image URL instead.");
-                    }
-                }
-                
                 $allowed_types = ['image/jpeg', 'image/png', 'image/webp'];
                 $file_type = mime_content_type($_FILES['featured_image']['tmp_name']);
                 
                 if (in_array($file_type, $allowed_types) && $_FILES['featured_image']['size'] <= 5000000) {
                     $ext = pathinfo($_FILES['featured_image']['name'], PATHINFO_EXTENSION);
-                    $new_filename = uniqid('img_') . '.' . $ext;
-                    $target_file = $upload_dir . $new_filename;
-                    if (@move_uploaded_file($_FILES['featured_image']['tmp_name'], $target_file)) {
-                        $image_url = $target_file;
-                    } else {
-                        throw new Exception("Failed to save image. Server might be read-only. Please use an Image URL instead.");
-                    }
+                    $new_filename = 'submissions/' . uniqid('img_') . '.' . $ext;
+                    $image_url = uploadToVercelBlob($_FILES['featured_image']['tmp_name'], $new_filename);
                 } else {
                     throw new Exception("Invalid image file or file too large (Max 5MB).");
                 }
@@ -49,23 +37,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
             $attachment_url = trim($_POST['attachment_url'] ?? '');
             if (isset($_FILES['attachment']) && $_FILES['attachment']['error'] == UPLOAD_ERR_OK) {
-                $upload_dir_docs = 'assets/docs/submissions/';
-                if (!is_dir($upload_dir_docs)) {
-                    if (!@mkdir($upload_dir_docs, 0777, true)) {
-                        throw new Exception("File uploads are disabled on this server. Please use a Document URL instead.");
-                    }
-                }
-                
                 $file_type = mime_content_type($_FILES['attachment']['tmp_name']);
                 if ($file_type == 'application/pdf' && $_FILES['attachment']['size'] <= 10000000) {
                     $ext = pathinfo($_FILES['attachment']['name'], PATHINFO_EXTENSION);
-                    $new_filename = uniqid('doc_') . '.' . $ext;
-                    $target_file = $upload_dir_docs . $new_filename;
-                    if (@move_uploaded_file($_FILES['attachment']['tmp_name'], $target_file)) {
-                        $attachment_url = $target_file;
-                    } else {
-                        throw new Exception("Failed to save document. Server might be read-only. Please use a Document URL instead.");
-                    }
+                    $new_filename = 'submissions/' . uniqid('doc_') . '.' . $ext;
+                    $attachment_url = uploadToVercelBlob($_FILES['attachment']['tmp_name'], $new_filename);
                 } else {
                     throw new Exception("Attachment must be a PDF and under 10MB.");
                 }

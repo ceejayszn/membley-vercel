@@ -39,17 +39,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && $valid_token) {
             // Handle Cover Image Upload or Link
             $image_url = trim($_POST['image_link'] ?? '');
             if (isset($_FILES['cover_image']) && $_FILES['cover_image']['error'] == UPLOAD_ERR_OK) {
-                $upload_dir = 'assets/images/blogs/';
-                if (!is_dir($upload_dir)) {
-                    mkdir($upload_dir, 0777, true);
-                }
                 $file_extension = pathinfo($_FILES['cover_image']['name'], PATHINFO_EXTENSION);
-                $new_filename = uniqid('blog_') . '.' . $file_extension;
-                $target_file = $upload_dir . $new_filename;
-                
-                if (move_uploaded_file($_FILES['cover_image']['tmp_name'], $target_file)) {
-                    $image_url = $target_file;
-                }
+                $new_filename = 'blogs/' . uniqid('blog_') . '.' . $file_extension;
+                $image_url = uploadToVercelBlob($_FILES['cover_image']['tmp_name'], $new_filename);
             }
 
             $video_url = trim($_POST['video_url'] ?? '');

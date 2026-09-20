@@ -339,3 +339,48 @@ try {
     <?php
     exit;
 }
+
+/**
+ * Uploads a local file to Vercel Blob Storage using the REST API.
+ * Requires BLOB_READ_WRITE_TOKEN to be set in environment variables.
+ * 
+ * @param string $filePath The absolute or relative path to the local file to upload
+ * @param string $destinationName The desired path/filename in Vercel Blob (e.g. 'assets/images/submissions/img_123.jpg')
+ * @return string The public URL of the uploaded blob
+ * @throws Exception If upload fails or token is missing
+ */
+function uploadToVercelBlob($filePath, $destinationName) {
+    $token = getenv('BLOB_READ_WRITE_TOKEN');
+    if (!$token) {
+        throw new Exception("Vercel Blob token is missing. Please configure BLOB_READ_WRITE_TOKEN in Vercel.");
+    }
+    
+    $ch = curl_init();
+    
+    // Vercel Blob REST API endpoint
+    $url = "https://blob.vercel-storage.com/" . rawurlencode($destinationName);
+    
+    curl_setopt($ch, CURLOPT_URL, $url);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'PUT');
+    
+    // Read the file data
+    $fileData = file_get_contents($filePath);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, $fileData);
+    
+    curl_setopt($ch, CURLOPT_HTTPHEADER, [
+        'authorization: Bearer ' . $token,
+        'x-api-version: 7'
+    ]);
+    
+    $response = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+    
+    if ($httpCode >= 200 && $httpCode < 300) {
+        $result = json_decode($response, true);
+        return $result['url'] ?? null;
+    }
+    
+    throw new Exception("Failed to upload to Vercel Blob (HTTP $httpCode): $response");
+}
