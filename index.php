@@ -291,7 +291,7 @@ try {
             <?php if (!empty($latest_blogs)): ?>
                 <?php foreach ($latest_blogs as $post): ?>
                     <div class="card">
-                        <div class="card-img" style="background-image: url('<?php echo !empty($post['image_url']) ? htmlspecialchars($post['image_url']) : 'https://images.unsplash.com/photo-1490730141103-6cac27aaab94?auto=format&fit=crop&q=80&w=400'; ?>');">
+                        <div class="card-img" style="background-image: url('<?php echo !empty($post['image_url']) ? htmlspecialchars($post['image_url']) : 'https://images.unsplash.com/photo-1490730141103-6cac27aaab94?auto=format&fit=crop&q=80&w=400'; ?>'); background-size: cover; background-position: top center;">
                             <span class="card-tag"><?php echo htmlspecialchars($post['category']); ?></span>
                         </div>
                         <div class="card-body">
@@ -310,8 +310,7 @@ try {
                 <div>
             <h3 style="margin-bottom: 1rem; color: var(--primary);">Camp Meeting Update</h3>
             <div class="card" style="border: 2px solid var(--accent);">
-                                <div class="card-img" style="background-image: url(''); background-color: #f1f5f9; display: flex; align-items: center; justify-content: center;">
-                    <span style="color: var(--text-muted); font-size: 0.9rem;">[Camp Meeting Photo Placeholder]</span>
+                <div class="card-img" style="background-image: url('https://images.unsplash.com/photo-1438232992991-995b7058bbb3?auto=format&fit=crop&q=80&w=600'); background-size: cover; background-position: top center;">
                     <span class="card-tag" style="background-color: var(--accent); color: var(--primary-dark);">Special Update</span>
                 </div>
                 <div class="card-body">

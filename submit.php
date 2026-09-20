@@ -30,27 +30,27 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
             if (isset($_FILES['featured_images']) && !empty($_FILES['featured_images']['name'][0])) {
                 $count = count($_FILES['featured_images']['name']);
+                $allowed_img_exts = ['jpg', 'jpeg', 'png', 'webp', 'gif', 'svg', 'heic', 'bmp'];
+                
                 for ($i = 0; $i < $count; $i++) {
                     if ($_FILES['featured_images']['error'][$i] == UPLOAD_ERR_OK) {
                         $tmp_name = $_FILES['featured_images']['tmp_name'][$i];
                         $name = $_FILES['featured_images']['name'][$i];
                         $size = $_FILES['featured_images']['size'][$i];
-                        $allowed_types = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
-                        $file_type = mime_content_type($tmp_name);
+                        $ext = strtolower(pathinfo($name, PATHINFO_EXTENSION));
                         
-                        if (in_array($file_type, $allowed_types) && $size <= 15000000) {
-                            $ext = pathinfo($name, PATHINFO_EXTENSION);
+                        if (in_array($ext, $allowed_img_exts) && $size <= 25000000) {
                             $new_filename = 'submissions/' . uniqid('img_') . '.' . $ext;
                             $url = uploadToVercelBlob($tmp_name, $new_filename);
                             if ($url) $uploaded_images[] = $url;
                         } else {
-                            throw new Exception("File '$name' is not a supported image or exceeds 15MB limit.");
+                            throw new Exception("File '$name' is not a supported image format (.$ext) or exceeds 25MB limit.");
                         }
                     }
                 }
             }
             if (isset($_FILES['featured_image']) && $_FILES['featured_image']['error'] == UPLOAD_ERR_OK) {
-                $ext = pathinfo($_FILES['featured_image']['name'], PATHINFO_EXTENSION);
+                $ext = strtolower(pathinfo($_FILES['featured_image']['name'], PATHINFO_EXTENSION));
                 $url = uploadToVercelBlob($_FILES['featured_image']['tmp_name'], 'submissions/' . uniqid('img_') . '.' . $ext);
                 if ($url) $uploaded_images[] = $url;
             }
