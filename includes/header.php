@@ -14,21 +14,19 @@ $current_page = basename($_SERVER['SCRIPT_NAME']);
 </head>
 <body>
 
-    <?php if ($current_page == 'index.php'): ?>
-        <div class="top-bar">
+    <div class="top-bar">
         <div class="container">
-            <div>
-                <i class="fa-solid fa-location-dot"></i> Ruiru, Membley Estate, Kenya | 
+            <div class="top-bar-info">
+                <i class="fa-solid fa-location-dot"></i> Ruiru, Membley Estate, Kenya <span class="top-bar-sep">|</span> 
                 <i class="fa-solid fa-envelope"></i> <a href="mailto:membleyadventist@gmail.com">membleyadventist@gmail.com</a>
             </div>
             <div class="top-bar-links">
-                <a href="https://www.instagram.com/membleyadventist/" target="_blank"><i class="fa-brands fa-instagram"></i></a>
-                <a href="https://www.tiktok.com/@membleyadventist" target="_blank"><i class="fa-brands fa-tiktok"></i></a>
+                <a href="https://www.instagram.com/membleyadventist/" target="_blank" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
+                <a href="https://www.tiktok.com/@membleyadventist" target="_blank" aria-label="TikTok"><i class="fa-brands fa-tiktok"></i></a>
                 <a href="giving.php" style="color: var(--accent); font-weight: 700;"><i class="fa-solid fa-heart"></i> Give Online</a>
             </div>
         </div>
     </div>
-    <?php endif; ?>
 
         <header class="main-header">
         <div class="container header-container">
