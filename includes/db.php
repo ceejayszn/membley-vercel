@@ -406,3 +406,20 @@ function uploadToVercelBlob($filePath, $destinationName) {
     
     throw new Exception("Failed to upload to Vercel Blob (HTTP $httpCode): $response");
 }
+
+/**
+ * Safely resolves a media file path or URL for web display.
+ * Handles HTTP/HTTPS URLs (e.g. Vercel Blob) and local asset paths correctly.
+ * 
+ * @param string $path The stored image/attachment path or URL
+ * @param bool $is_admin Whether called from within the /admin/ directory
+ * @return string Resolved web URL
+ */
+function get_media_url($path, $is_admin = false) {
+    if (empty($path)) return '';
+    if (strpos($path, 'http://') === 0 || strpos($path, 'https://') === 0) {
+        return $path;
+    }
+    $clean_path = ltrim($path, '/');
+    return $is_admin ? '../' . $clean_path : '/' . $clean_path;
+}

@@ -155,9 +155,21 @@ if (!$submission) {
                             </p>
                         <?php endif; ?>
 
-                        <?php if(!empty($submission['featured_image'])): ?>
-                            <div style="margin-bottom: 1.5rem;">
-                                <img src="../<?php echo htmlspecialchars($submission['featured_image']); ?>" alt="Featured Image" style="max-width: 100%; height: auto; border-radius: 6px;">
+                        <?php if(!empty($submission['featured_image'])): 
+                            $img_url = get_media_url($submission['featured_image'], true);
+                        ?>
+                            <div style="margin-bottom: 1.5rem; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 1rem; text-align: center;">
+                                <div style="margin-bottom: 1rem; max-height: 480px; overflow: hidden; display: flex; align-items: center; justify-content: center; background: #0f172a; border-radius: 6px;">
+                                    <img src="<?php echo htmlspecialchars($img_url); ?>" alt="Featured Image" style="max-width: 100%; max-height: 480px; object-fit: contain;">
+                                </div>
+                                <div style="display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap;">
+                                    <a href="<?php echo htmlspecialchars($img_url); ?>" target="_blank" class="admin-btn-outline" style="font-size: 0.85rem; padding: 0.5rem 1rem;">
+                                        <i class="fa-solid fa-arrow-up-right-from-square" style="margin-right: 0.4rem;"></i> Open Full Image
+                                    </a>
+                                    <a href="<?php echo htmlspecialchars($img_url); ?>" download target="_blank" class="admin-btn" style="font-size: 0.85rem; padding: 0.5rem 1rem; background-color: var(--primary); text-decoration: none;">
+                                        <i class="fa-solid fa-download" style="margin-right: 0.4rem;"></i> Download Image
+                                    </a>
+                                </div>
                             </div>
                         <?php endif; ?>
 
@@ -165,11 +177,22 @@ if (!$submission) {
                             <?php echo $submission['content']; // Raw HTML from rich text ?>
                         </div>
 
-                        <?php if(!empty($submission['attachment'])): ?>
-                            <div style="background: #f8fafc; padding: 1rem; border-radius: 6px; border: 1px solid #e2e8f0; margin-bottom: 1rem;">
-                                <i class="fa-solid fa-file-pdf" style="color: #ef4444; margin-right: 0.5rem;"></i> 
-                                <strong>Attached Document:</strong>
-                                <a href="../<?php echo htmlspecialchars($submission['attachment']); ?>" target="_blank" style="margin-left: 1rem; color: var(--primary);">View PDF</a>
+                        <?php if(!empty($submission['attachment'])): 
+                            $doc_url = get_media_url($submission['attachment'], true);
+                        ?>
+                            <div style="background: #f8fafc; padding: 1.25rem; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 1.5rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+                                <div style="display: flex; align-items: center;">
+                                    <i class="fa-solid fa-file-pdf" style="color: #ef4444; font-size: 1.5rem; margin-right: 0.75rem;"></i> 
+                                    <strong style="color: var(--text-dark);">Attached Document / PDF</strong>
+                                </div>
+                                <div style="display: flex; gap: 0.5rem;">
+                                    <a href="<?php echo htmlspecialchars($doc_url); ?>" target="_blank" class="admin-btn-outline" style="font-size: 0.85rem; padding: 0.45rem 0.85rem;">
+                                        <i class="fa-solid fa-eye" style="margin-right: 0.3rem;"></i> View PDF
+                                    </a>
+                                    <a href="<?php echo htmlspecialchars($doc_url); ?>" download target="_blank" class="admin-btn" style="font-size: 0.85rem; padding: 0.45rem 0.85rem; background-color: var(--primary); text-decoration: none;">
+                                        <i class="fa-solid fa-download" style="margin-right: 0.3rem;"></i> Download PDF
+                                    </a>
+                                </div>
                             </div>
                         <?php endif; ?>
                     </div>

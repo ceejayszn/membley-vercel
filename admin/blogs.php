@@ -37,30 +37,21 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     $upload_error = '';
     if (isset($_FILES['cover_image']) && $_FILES['cover_image']['error'] == UPLOAD_ERR_OK) {
-        // Enforce max upload size (2 MB)
-        $maxSize = 2 * 1024 * 1024; // 2 MB
-        if ($_FILES['cover_image']['size'] > $maxSize) {
-            $upload_error = 'Image too large (max 2 MB). Please use a smaller file or provide an image URL.';
-        } else {
-            $upload_dir = '../assets/images/blogs/';
-            // Ensure directory exists and is writable before attempting to move file
-            if (is_dir($upload_dir) && is_writable($upload_dir)) {
-                $file_extension = pathinfo($_FILES['cover_image']['name'], PATHINFO_EXTENSION);
-                $new_filename = uniqid('blog_') . '.' . $file_extension;
-                $target_file = rtrim($upload_dir, '/') . '/' . $new_filename;
-                if (move_uploaded_file($_FILES['cover_image']['tmp_name'], $target_file)) {
-                    $image_url = '/assets/images/blogs/' . $new_filename;
-                } else {
-                    $upload_error = 'Image upload failed.';
-                }
-            } else {
-                // Directory not writable (e.g. Vercel) – fall through to URL field
-                $upload_error = 'Server does not support file uploads. Please use an image URL instead.';
+        $allowed_types = ['image/jpeg', 'image/png', 'image/webp'];
+        $file_type = mime_content_type($_FILES['cover_image']['tmp_name']);
+        if (in_array($file_type, $allowed_types) && $_FILES['cover_image']['size'] <= 5000000) {
+            try {
+                $ext = pathinfo($_FILES['cover_image']['name'], PATHINFO_EXTENSION);
+                $new_filename = 'blogs/' . uniqid('blog_') . '.' . $ext;
+                $image_url = uploadToVercelBlob($_FILES['cover_image']['tmp_name'], $new_filename);
+            } catch (Exception $e) {
+                $upload_error = 'Blob upload failed: ' . $e->getMessage();
             }
+        } else {
+            $upload_error = 'Invalid image file or file too large (Max 5MB).';
         }
     }
 
-    // Show upload error only if no URL was provided as fallback
     if (!empty($upload_error) && empty($image_url)) {
         $error = $upload_error;
     }
