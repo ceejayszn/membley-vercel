@@ -14,45 +14,47 @@ $current_page = basename($_SERVER['SCRIPT_NAME']);
 </head>
 <body>
 
-    <div class="top-bar">
-        <div class="container">
-            <div class="top-bar-info">
-                <i class="fa-solid fa-location-dot"></i> Ruiru, Membley Estate, Kenya <span class="top-bar-sep">|</span> 
-                <i class="fa-solid fa-envelope"></i> <a href="mailto:membleyadventist@gmail.com">membleyadventist@gmail.com</a>
-            </div>
-            <div class="top-bar-links">
-                <a href="https://www.instagram.com/membleyadventist/" target="_blank" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
-                <a href="https://www.tiktok.com/@membleyadventist" target="_blank" aria-label="TikTok"><i class="fa-brands fa-tiktok"></i></a>
-                <a href="giving.php" style="color: var(--accent); font-weight: 700;"><i class="fa-solid fa-heart"></i> Give Online</a>
+    <div class="site-header-wrapper">
+        <div class="top-bar">
+            <div class="container">
+                <div class="top-bar-info">
+                    <i class="fa-solid fa-location-dot"></i> Ruiru, Membley Estate, Kenya <span class="top-bar-sep">|</span> 
+                    <i class="fa-solid fa-envelope"></i> <a href="mailto:membleyadventist@gmail.com">membleyadventist@gmail.com</a>
+                </div>
+                <div class="top-bar-links">
+                    <a href="https://www.instagram.com/membleyadventist/" target="_blank" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
+                    <a href="https://www.tiktok.com/@membleyadventist" target="_blank" aria-label="TikTok"><i class="fa-brands fa-tiktok"></i></a>
+                    <a href="giving.php" style="color: var(--accent); font-weight: 700;"><i class="fa-solid fa-heart"></i> Give Online</a>
+                </div>
             </div>
         </div>
-    </div>
 
         <header class="main-header">
-        <div class="container header-container">
-            <a href="index.php" class="logo-link">
-                <img src="assets/images/church_logo.jpg" alt="Membley Seventh-day Adventist Church" class="logo-svg" style="height: 65px; width: auto; border-radius: 4px;">
-            </a>
+            <div class="container header-container">
+                <a href="index.php" class="logo-link">
+                    <img src="assets/images/church_logo.jpg" alt="Membley Seventh-day Adventist Church" class="logo-svg" style="height: 65px; width: auto; border-radius: 4px;">
+                </a>
 
-                        <ul class="nav-menu">
-                <li><a href="index.php" class="nav-link <?php echo ($current_page == 'index.php') ? 'active' : ''; ?>">Home</a></li>
-                <li><a href="about.php" class="nav-link <?php echo ($current_page == 'about.php') ? 'active' : ''; ?>">About</a></li>
-                <li><a href="ministries.php" class="nav-link <?php echo ($current_page == 'ministries.php') ? 'active' : ''; ?>">Ministries</a></li>
-                <li><a href="events.php" class="nav-link <?php echo ($current_page == 'events.php' || $current_page == 'past-events.php' || $current_page == 'rsvp.php') ? 'active' : ''; ?>">Events/Announcements</a></li>
-                <li><a href="blog.php" class="nav-link <?php echo ($current_page == 'blog.php' || $current_page == 'blog-single.php') ? 'active' : ''; ?>">Blog / Sermons</a></li>
-                <li><a href="giving.php" class="nav-link <?php echo ($current_page == 'giving.php') ? 'active' : ''; ?>">Giving</a></li>
-                <li><a href="members.php" class="nav-link <?php echo ($current_page == 'members.php') ? 'active' : ''; ?>">Members</a></li>
-                <li><a href="contact.php" class="nav-link <?php echo ($current_page == 'contact.php') ? 'active' : ''; ?>">Contact</a></li>
-                <li><a href="submit.php" class="nav-link <?php echo ($current_page == 'submit.php') ? 'active' : ''; ?>">Submit Content</a></li>
-            </ul>
+                <ul class="nav-menu">
+                    <li><a href="index.php" class="nav-link <?php echo ($current_page == 'index.php') ? 'active' : ''; ?>">Home</a></li>
+                    <li><a href="about.php" class="nav-link <?php echo ($current_page == 'about.php') ? 'active' : ''; ?>">About</a></li>
+                    <li><a href="ministries.php" class="nav-link <?php echo ($current_page == 'ministries.php') ? 'active' : ''; ?>">Ministries</a></li>
+                    <li><a href="events.php" class="nav-link <?php echo ($current_page == 'events.php' || $current_page == 'past-events.php' || $current_page == 'rsvp.php') ? 'active' : ''; ?>">Events/Announcements</a></li>
+                    <li><a href="blog.php" class="nav-link <?php echo ($current_page == 'blog.php' || $current_page == 'blog-single.php') ? 'active' : ''; ?>">Blog / Sermons</a></li>
+                    <li><a href="giving.php" class="nav-link <?php echo ($current_page == 'giving.php') ? 'active' : ''; ?>">Giving</a></li>
+                    <li><a href="members.php" class="nav-link <?php echo ($current_page == 'members.php') ? 'active' : ''; ?>">Members</a></li>
+                    <li><a href="contact.php" class="nav-link <?php echo ($current_page == 'contact.php') ? 'active' : ''; ?>">Contact</a></li>
+                    <li><a href="submit.php" class="nav-link <?php echo ($current_page == 'submit.php') ? 'active' : ''; ?>">Submit Content</a></li>
+                </ul>
 
-                        <button class="mobile-menu-btn" id="mobileMenuBtn">
-                <span></span>
-                <span></span>
-                <span></span>
-            </button>
-        </div>
-    </header>
+                <button class="mobile-menu-btn" id="mobileMenuBtn">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+            </div>
+        </header>
+    </div>
 
         <nav class="mobile-nav" id="mobileNav">
         <ul class="mobile-nav-list">

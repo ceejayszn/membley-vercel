@@ -113,7 +113,21 @@ img {
     transform: translateY(-2px);
 }
 
-/* Header */
+/* Header Wrapper */
+.site-header-wrapper {
+    display: flex;
+    flex-direction: column;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+@media (max-width: 768px) {
+    .site-header-wrapper {
+        flex-direction: column-reverse;
+    }
+}
+
 .top-bar {
     background-color: var(--primary-dark);
     color: rgba(255, 255, 255, 0.8);
