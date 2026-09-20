@@ -373,7 +373,9 @@ function uploadToVercelBlob($filePath, $destinationName) {
     }
     
     if (!$token) {
-        throw new Exception("Vercel Blob token is missing. If you just added environment variables in Vercel, you MUST trigger a NEW deployment (Deployments -> ... -> Redeploy) for the environment variables to take effect.");
+        $foundKeys = array_keys(array_merge($_SERVER ?? [], $_ENV ?? []));
+        $keySummary = implode(', ', array_slice($foundKeys, 0, 35));
+        throw new Exception("Vercel Blob token is missing. Environment keys seen by PHP: [$keySummary]. Please add 'BLOB_READ_WRITE_TOKEN' in Vercel Settings -> Environment Variables and REDEPLOY.");
     }
     
     $ch = curl_init();
