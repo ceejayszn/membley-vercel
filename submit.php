@@ -21,10 +21,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         try {
             $pdo->beginTransaction();
 
-            $image_url = null;
+            $image_url = trim($_POST['image_url'] ?? '');
             if (isset($_FILES['featured_image']) && $_FILES['featured_image']['error'] == UPLOAD_ERR_OK) {
                 $upload_dir = 'assets/images/submissions/';
-                if (!is_dir($upload_dir)) mkdir($upload_dir, 0777, true);
+                if (!is_dir($upload_dir)) {
+                    if (!@mkdir($upload_dir, 0777, true)) {
+                        throw new Exception("File uploads are disabled on this server. Please use an Image URL instead.");
+                    }
+                }
                 
                 $allowed_types = ['image/jpeg', 'image/png', 'image/webp'];
                 $file_type = mime_content_type($_FILES['featured_image']['tmp_name']);
@@ -33,26 +37,34 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     $ext = pathinfo($_FILES['featured_image']['name'], PATHINFO_EXTENSION);
                     $new_filename = uniqid('img_') . '.' . $ext;
                     $target_file = $upload_dir . $new_filename;
-                    if (move_uploaded_file($_FILES['featured_image']['tmp_name'], $target_file)) {
+                    if (@move_uploaded_file($_FILES['featured_image']['tmp_name'], $target_file)) {
                         $image_url = $target_file;
+                    } else {
+                        throw new Exception("Failed to save image. Server might be read-only. Please use an Image URL instead.");
                     }
                 } else {
                     throw new Exception("Invalid image file or file too large (Max 5MB).");
                 }
             }
 
-            $attachment_url = null;
+            $attachment_url = trim($_POST['attachment_url'] ?? '');
             if (isset($_FILES['attachment']) && $_FILES['attachment']['error'] == UPLOAD_ERR_OK) {
                 $upload_dir_docs = 'assets/docs/submissions/';
-                if (!is_dir($upload_dir_docs)) mkdir($upload_dir_docs, 0777, true);
+                if (!is_dir($upload_dir_docs)) {
+                    if (!@mkdir($upload_dir_docs, 0777, true)) {
+                        throw new Exception("File uploads are disabled on this server. Please use a Document URL instead.");
+                    }
+                }
                 
                 $file_type = mime_content_type($_FILES['attachment']['tmp_name']);
                 if ($file_type == 'application/pdf' && $_FILES['attachment']['size'] <= 10000000) {
                     $ext = pathinfo($_FILES['attachment']['name'], PATHINFO_EXTENSION);
                     $new_filename = uniqid('doc_') . '.' . $ext;
                     $target_file = $upload_dir_docs . $new_filename;
-                    if (move_uploaded_file($_FILES['attachment']['tmp_name'], $target_file)) {
+                    if (@move_uploaded_file($_FILES['attachment']['tmp_name'], $target_file)) {
                         $attachment_url = $target_file;
+                    } else {
+                        throw new Exception("Failed to save document. Server might be read-only. Please use a Document URL instead.");
                     }
                 } else {
                     throw new Exception("Attachment must be a PDF and under 10MB.");
@@ -175,14 +187,20 @@ require_once 'includes/header.php';
 
                 <div style="margin-bottom: 1.5rem; display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                     <div>
-                        <label for="featured_image" style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: var(--text-dark);">Featured Image (Optional)</label>
+                        <label for="featured_image" style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: var(--text-dark);">Featured Image Upload (Optional)</label>
                         <input type="file" id="featured_image" name="featured_image" accept="image/jpeg,image/png,image/webp" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 6px; font-size: 0.9rem; background: var(--bg-light);">
-                        <small style="color: var(--text-muted); display: block; margin-top: 0.25rem;">JPG, PNG, or WebP. Max 5MB.</small>
+                        <small style="color: var(--text-muted); display: block; margin-top: 0.25rem;">JPG, PNG, WebP (Max 5MB).</small>
+                        
+                        <label for="image_url" style="display: block; font-weight: 600; margin-bottom: 0.5rem; margin-top: 1rem; color: var(--text-dark);">OR Image URL</label>
+                        <input type="url" id="image_url" name="image_url" placeholder="https://example.com/image.jpg" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 6px; font-size: 0.9rem;">
                     </div>
                     <div>
-                        <label for="attachment" style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: var(--text-dark);">Supporting PDF (Optional)</label>
+                        <label for="attachment" style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: var(--text-dark);">Supporting PDF Upload (Optional)</label>
                         <input type="file" id="attachment" name="attachment" accept="application/pdf" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 6px; font-size: 0.9rem; background: var(--bg-light);">
-                        <small style="color: var(--text-muted); display: block; margin-top: 0.25rem;">PDF only. Max 10MB.</small>
+                        <small style="color: var(--text-muted); display: block; margin-top: 0.25rem;">PDF only (Max 10MB).</small>
+                        
+                        <label for="attachment_url" style="display: block; font-weight: 600; margin-bottom: 0.5rem; margin-top: 1rem; color: var(--text-dark);">OR Document URL</label>
+                        <input type="url" id="attachment_url" name="attachment_url" placeholder="https://example.com/doc.pdf" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 6px; font-size: 0.9rem;">
                     </div>
                 </div>
 
