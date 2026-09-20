@@ -45,6 +45,7 @@ $current_page = basename($_SERVER['SCRIPT_NAME']);
                 <li><a href="giving.php" class="nav-link <?php echo ($current_page == 'giving.php') ? 'active' : ''; ?>">Giving</a></li>
                 <li><a href="members.php" class="nav-link <?php echo ($current_page == 'members.php') ? 'active' : ''; ?>">Members</a></li>
                 <li><a href="contact.php" class="nav-link <?php echo ($current_page == 'contact.php') ? 'active' : ''; ?>">Contact</a></li>
+                <li><a href="submit.php" class="nav-link <?php echo ($current_page == 'submit.php') ? 'active' : ''; ?>">Submit Content</a></li>
             </ul>
 
                         <button class="mobile-menu-btn" id="mobileMenuBtn">
@@ -65,5 +66,6 @@ $current_page = basename($_SERVER['SCRIPT_NAME']);
             <li><a href="giving.php" class="mobile-nav-link">Giving / Pledges</a></li>
             <li><a href="members.php" class="mobile-nav-link">Members / Registrations</a></li>
             <li><a href="contact.php" class="mobile-nav-link">Contact & Prayer</a></li>
+            <li><a href="submit.php" class="mobile-nav-link">Submit Content</a></li>
         </ul>
     </nav>

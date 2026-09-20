@@ -33,11 +33,18 @@ try {
                 <i class="fa-solid fa-church"></i> Membley SDA Admin
             </div>
             <ul class="sidebar-menu">
+
                 <li><a href="dashboard.php" class="sidebar-link"><i class="fa-solid fa-gauge" style="margin-right: 0.5rem;"></i> Dashboard</a></li>
+
                 <li><a href="rsvps.php" class="sidebar-link"><i class="fa-solid fa-calendar-check" style="margin-right: 0.5rem;"></i> Event RSVPs</a></li>
+
                 <li><a href="members.php" class="sidebar-link"><i class="fa-solid fa-users" style="margin-right: 0.5rem;"></i> Members</a></li>
+
                 <li><a href="forms.php" class="sidebar-link active"><i class="fa-solid fa-wpforms" style="margin-right: 0.5rem;"></i> Manage Forms</a></li>
+
                 <li><a href="blogs.php" class="sidebar-link"><i class="fa-solid fa-newspaper" style="margin-right: 0.5rem;"></i> Manage Blogs</a></li>
+
+                <li><a href="content_submissions.php" class="sidebar-link"><i class="fa-solid fa-file-signature" style="margin-right: 0.5rem;"></i> Content Submissions</a></li>`n
                 <li><a href="submissions.php" class="sidebar-link"><i class="fa-solid fa-envelope-open-text" style="margin-right: 0.5rem;"></i> Submissions</a></li>
             </ul>
             <div class="sidebar-footer">

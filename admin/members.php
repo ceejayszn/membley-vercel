@@ -106,7 +106,8 @@ try {
             <li><a href="forms.php"      class="sidebar-link"><i class="fa-solid fa-wpforms"            style="margin-right:0.5rem;"></i> Manage Forms</a></li>
             <li><a href="analytics.php"  class="sidebar-link"><i class="fa-solid fa-chart-line"         style="margin-right:0.5rem;"></i> Visitor Analytics</a></li>
             <li><a href="blogs.php"      class="sidebar-link"><i class="fa-solid fa-newspaper"          style="margin-right:0.5rem;"></i> Manage Blogs</a></li>
-            <li><a href="submissions.php" class="sidebar-link"><i class="fa-solid fa-envelope-open-text" style="margin-right:0.5rem;"></i> Submissions</a></li>
+            <li><a href="content_submissions.php" class="sidebar-link"><i class="fa-solid fa-file-signature" style="margin-right: 0.5rem;"></i> Content Submissions</a></li>`n
+                <li><a href="submissions.php" class="sidebar-link"><i class="fa-solid fa-envelope-open-text" style="margin-right:0.5rem;"></i> Submissions</a></li>
         </ul>
         <div class="sidebar-footer">
             <a href="logout.php" class="sidebar-link" style="color:#ff8b8b;"><i class="fa-solid fa-right-from-bracket" style="margin-right:0.5rem;"></i> Sign Out</a>

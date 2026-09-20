@@ -116,6 +116,26 @@ try {
         created_at $dateTimeType DEFAULT CURRENT_TIMESTAMP
     )");
 
+    $pdo->exec("CREATE TABLE IF NOT EXISTS content_submissions (
+        id $pkType,
+        name TEXT NOT NULL,
+        email TEXT NOT NULL,
+        phone TEXT,
+        submission_type TEXT NOT NULL,
+        title TEXT NOT NULL,
+        summary TEXT,
+        content TEXT NOT NULL,
+        featured_image TEXT,
+        attachment TEXT,
+        status TEXT DEFAULT 'pending',
+        admin_notes TEXT,
+        rejection_reason TEXT,
+        created_at $dateTimeType DEFAULT CURRENT_TIMESTAMP,
+        updated_at $dateTimeType,
+        reviewed_at $dateTimeType,
+        published_at $dateTimeType
+    )");
+
     $pdo->exec("CREATE TABLE IF NOT EXISTS analytics (
         page TEXT PRIMARY KEY,
         views INTEGER DEFAULT 0,
