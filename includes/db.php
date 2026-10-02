@@ -1,25 +1,73 @@
 <?php
 
-$dbUrl = getenv('DATABASE_URL') ?: getenv('POSTGRES_URL');
-$isPostgres = !empty($dbUrl);
+// ---------------------------------------------------------------------------
+// Supabase pooler helper — tries all AWS regions until one connects.
+// Direct connections to db.*.supabase.co:5432 are blocked in serverless.
+// ---------------------------------------------------------------------------
+function _supabase_connect(string $ref, string $pass): PDO {
+    $regions = [
+        'aws-0-eu-central-1',  // Europe (Frankfurt) — most likely for East Africa
+        'aws-0-us-east-1',     // US East (N. Virginia)
+        'aws-0-ap-southeast-1',// Asia Pacific (Singapore)
+        'aws-0-us-west-1',     // US West (N. California)
+        'aws-0-ap-northeast-1',// Asia Pacific (Tokyo)
+    ];
+    $lastErr = null;
+    foreach ($regions as $region) {
+        $host = "{$region}.pooler.supabase.com";
+        $dsn  = "pgsql:host={$host};port=6543;dbname=postgres;sslmode=require";
+        try {
+            $pdo = new PDO($dsn, "postgres.{$ref}", $pass, [
+                PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                PDO::ATTR_EMULATE_PREPARES   => true,
+                PDO::ATTR_TIMEOUT            => 8,
+            ]);
+            return $pdo; // connected!
+        } catch (PDOException $e) {
+            $lastErr = $e;
+        }
+    }
+    throw $lastErr; // all regions failed — surface the last error
+}
+
+$dbUrl     = getenv('DATABASE_URL') ?: getenv('POSTGRES_URL') ?: getenv('SUPABASE_DB_URL');
+$isPostgres = false;
 
 try {
-    if ($isPostgres) {
+    // ── Priority 1: DATABASE_URL / POSTGRES_URL env var ──────────────────────
+    if (!empty($dbUrl)) {
         $parsedUrl = parse_url($dbUrl);
-        $host = $parsedUrl['host'];
-        $port = isset($parsedUrl['port']) ? $parsedUrl['port'] : 5432;
-        $user = $parsedUrl['user'];
-        $pass = $parsedUrl['pass'];
-        $dbname = ltrim($parsedUrl['path'], '/');
-        
-        $dsn = "pgsql:host=$host;port=$port;dbname=$dbname;sslmode=require";
-        $pdo = new PDO($dsn, $user, $pass, [
-            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-            PDO::ATTR_EMULATE_PREPARES => true,
-            PDO::ATTR_TIMEOUT => 5
-        ]);
+        $host   = $parsedUrl['host'] ?? '';
+        $port   = isset($parsedUrl['port']) ? (int)$parsedUrl['port'] : 5432;
+        $user   = urldecode($parsedUrl['user'] ?? 'postgres');
+        $pass   = urldecode($parsedUrl['pass'] ?? '');
+        $dbname = ltrim($parsedUrl['path'] ?? 'postgres', '/');
+
+        // Supabase direct-connection hosts are blocked in serverless — reroute.
+        if (preg_match('/db\.([a-z0-9]+)\.supabase\.co/', $host, $m)) {
+            $pdo = _supabase_connect($m[1], $pass);
+        } else {
+            $dsn = "pgsql:host={$host};port={$port};dbname={$dbname};sslmode=require";
+            $pdo = new PDO($dsn, $user, $pass, [
+                PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                PDO::ATTR_EMULATE_PREPARES   => true,
+                PDO::ATTR_TIMEOUT            => 10,
+            ]);
+        }
+        $isPostgres = true;
+
+    // ── Priority 2: Hardcoded Supabase credentials (no env var needed) ────────
     } else {
+        $supabaseRef  = getenv('SUPABASE_PROJECT_REF') ?: 'ohhnfwxeuwkebyvogwkd';
+        $supabasePass = getenv('SUPABASE_DB_PASSWORD')  ?: '00110211946150';
+        $pdo = _supabase_connect($supabaseRef, $supabasePass);
+        $isPostgres = true;
+    }
+
+    // (SQLite fallback removed — Supabase is always available) {
+    if (false) {
         $db_file = __DIR__ . '/church.db';
         // Vercel and other Serverless platforms have read-only filesystems except for /tmp
         if (!is_writable(dirname($db_file)) && is_dir('/tmp') && is_writable('/tmp')) {
