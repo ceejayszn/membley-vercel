@@ -20,7 +20,7 @@
     }
   ],
   "env": {
-    "DATABASE_URL": "postgresql://postgres:7a*2q3v*%5EY%23*Sx3@db.ohhnfwxeuwkebyvogwkd.supabase.co:5432/postgres",
-    "POSTGRES_URL": "postgresql://postgres:7a*2q3v*%5EY%23*Sx3@db.ohhnfwxeuwkebyvogwkd.supabase.co:5432/postgres"
+    "DATABASE_URL": "postgresql://postgres.ohhnfwxeuwkebyvogwkd:00110211946150@aws-0-eu-central-1.pooler.supabase.com:6543/postgres",
+    "POSTGRES_URL": "postgresql://postgres.ohhnfwxeuwkebyvogwkd:00110211946150@aws-0-eu-central-1.pooler.supabase.com:6543/postgres"
   }
 }
