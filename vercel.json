@@ -18,5 +18,9 @@
       "src": "/(.*)",
       "dest": "/api/index.php"
     }
-  ]
+  ],
+  "env": {
+    "DATABASE_URL": "postgresql://postgres:7a*2q3v*%5EY%23*Sx3@db.ohhnfwxeuwkebyvogwkd.supabase.co:5432/postgres",
+    "POSTGRES_URL": "postgresql://postgres:7a*2q3v*%5EY%23*Sx3@db.ohhnfwxeuwkebyvogwkd.supabase.co:5432/postgres"
+  }
 }
