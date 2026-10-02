@@ -1,52 +1,76 @@
 <?php
 
-// ---------------------------------------------------------------------------
-// Supabase pooler helper — tries all AWS regions until one connects.
-// Direct connections to db.*.supabase.co:5432 are blocked in serverless.
-// ---------------------------------------------------------------------------
-function _supabase_connect(string $ref, string $pass): PDO {
-    $regions = [
-        'aws-0-eu-central-1',  // Europe (Frankfurt) — most likely for East Africa
-        'aws-0-us-east-1',     // US East (N. Virginia)
-        'aws-0-ap-southeast-1',// Asia Pacific (Singapore)
-        'aws-0-us-west-1',     // US West (N. California)
-        'aws-0-ap-northeast-1',// Asia Pacific (Tokyo)
-    ];
+// -----------------------------------------------------------------------
+// Supabase connection pooler helper.
+// Tries regions in order until one succeeds. Port 5432 on direct hosts
+// is blocked by Vercel's network; we must use the pooler on port 6543.
+// -----------------------------------------------------------------------
+function _supabase_connect(string $ref, string $pass, string $knownHost = ''): PDO {
+    // If caller knows the exact host (from env var), try it first
+    $regions = array_filter(array_unique(array_merge(
+        $knownHost ? [$knownHost] : [],
+        [
+            'aws-0-ap-southeast-1.pooler.supabase.com', // Singapore (most likely for East Africa)
+            'aws-0-eu-central-1.pooler.supabase.com',   // Frankfurt
+            'aws-0-us-east-1.pooler.supabase.com',      // N. Virginia
+            'aws-0-us-west-1.pooler.supabase.com',      // N. California
+            'aws-0-ap-northeast-1.pooler.supabase.com', // Tokyo
+            'aws-0-ap-south-1.pooler.supabase.com',     // Mumbai
+        ]
+    )));
+
     $lastErr = null;
-    foreach ($regions as $region) {
-        $host = "{$region}.pooler.supabase.com";
-        $dsn  = "pgsql:host={$host};port=6543;dbname=postgres;sslmode=require";
+    foreach ($regions as $host) {
+        $dsn = "pgsql:host={$host};port=6543;dbname=postgres;sslmode=require";
         try {
             $pdo = new PDO($dsn, "postgres.{$ref}", $pass, [
                 PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
                 PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
                 PDO::ATTR_EMULATE_PREPARES   => true,
-                PDO::ATTR_TIMEOUT            => 8,
+                PDO::ATTR_TIMEOUT            => 4, // 4s × 6 regions = 24s max, safely inside Vercel 30s limit
             ]);
-            return $pdo; // connected!
+            return $pdo;
         } catch (PDOException $e) {
             $lastErr = $e;
         }
     }
-    throw $lastErr; // all regions failed — surface the last error
+    throw $lastErr;
 }
 
-$dbUrl     = getenv('DATABASE_URL') ?: getenv('POSTGRES_URL') ?: getenv('SUPABASE_DB_URL');
+// -----------------------------------------------------------------------
+// Read every possible env var Vercel or Supabase integration might inject
+// -----------------------------------------------------------------------
+$dbUrl = getenv('DATABASE_URL')
+      ?: getenv('POSTGRES_URL')
+      ?: getenv('POSTGRES_PRISMA_URL')
+      ?: getenv('SUPABASE_DB_URL')
+      ?: '';
+
 $isPostgres = false;
+$pdo        = null;
 
 try {
-    // ── Priority 1: DATABASE_URL / POSTGRES_URL env var ──────────────────────
+    // ── Path A: A full DATABASE_URL is provided ──────────────────────────────
     if (!empty($dbUrl)) {
-        $parsedUrl = parse_url($dbUrl);
-        $host   = $parsedUrl['host'] ?? '';
-        $port   = isset($parsedUrl['port']) ? (int)$parsedUrl['port'] : 5432;
-        $user   = urldecode($parsedUrl['user'] ?? 'postgres');
-        $pass   = urldecode($parsedUrl['pass'] ?? '');
-        $dbname = ltrim($parsedUrl['path'] ?? 'postgres', '/');
+        $p      = parse_url($dbUrl);
+        $host   = $p['host']   ?? '';
+        $port   = isset($p['port']) ? (int)$p['port'] : 5432;
+        $user   = urldecode($p['user']  ?? 'postgres');
+        $pass   = urldecode($p['pass']  ?? '');
+        $dbname = ltrim($p['path'] ?? 'postgres', '/');
 
-        // Supabase direct-connection hosts are blocked in serverless — reroute.
+        // Supabase direct host (blocked on port 5432) → reroute to pooler
         if (preg_match('/db\.([a-z0-9]+)\.supabase\.co/', $host, $m)) {
-            $pdo = _supabase_connect($m[1], $pass);
+            $ref  = $m[1];
+            $pdo  = _supabase_connect($ref, $pass);
+
+        // Already a pooler URL — use as-is
+        } elseif (str_contains($host, 'pooler.supabase.com')) {
+            // Extract project ref from user like "postgres.XXXX"
+            $ref  = str_contains($user, '.') ? explode('.', $user, 2)[1] : 'ohhnfwxeuwkebyvogwkd';
+            $pdo  = _supabase_connect($ref, $pass, $host);
+
+        // Other Postgres (non-Supabase)
         } else {
             $dsn = "pgsql:host={$host};port={$port};dbname={$dbname};sslmode=require";
             $pdo = new PDO($dsn, $user, $pass, [
@@ -58,44 +82,65 @@ try {
         }
         $isPostgres = true;
 
-    // ── Priority 2: Hardcoded Supabase credentials (no env var needed) ────────
+    // ── Path B: No env var — use hardcoded Supabase credentials ─────────────
     } else {
-        $supabaseRef  = getenv('SUPABASE_PROJECT_REF') ?: 'ohhnfwxeuwkebyvogwkd';
-        $supabasePass = getenv('SUPABASE_DB_PASSWORD')  ?: '00110211946150';
-        $pdo = _supabase_connect($supabaseRef, $supabasePass);
+        $ref  = getenv('SUPABASE_PROJECT_REF') ?: 'ohhnfwxeuwkebyvogwkd';
+        $pass = getenv('SUPABASE_DB_PASSWORD')  ?: '00110211946150';
+        $pdo  = _supabase_connect($ref, $pass);
         $isPostgres = true;
     }
 
-    // (SQLite fallback removed — Supabase is always available) {
-    if (false) {
+} catch (PDOException $supabaseErr) {
+    // ── Path C: Supabase unreachable → fallback to local SQLite ─────────────
+    // This keeps the site alive even if Supabase is paused or network is down.
+    try {
         $db_file = __DIR__ . '/church.db';
-        // Vercel and other Serverless platforms have read-only filesystems except for /tmp
         if (!is_writable(dirname($db_file)) && is_dir('/tmp') && is_writable('/tmp')) {
             $tmp_db = '/tmp/church.db';
-            if (!file_exists($tmp_db) && file_exists($db_file)) {
-                @copy($db_file, $tmp_db);
-            }
+            if (!file_exists($tmp_db) && file_exists($db_file)) @copy($db_file, $tmp_db);
             $db_file = $tmp_db;
         } elseif (is_dir('/data') && is_writable('/data')) {
             $db_file = '/data/church.db';
-            if (!file_exists($db_file) && file_exists(__DIR__ . '/church.db')) {
+            if (!file_exists($db_file) && file_exists(__DIR__ . '/church.db'))
                 @copy(__DIR__ . '/church.db', $db_file);
-            }
         }
-
-        $dsn = "sqlite:$db_file";
-        $pdo = new PDO($dsn, null, null, [
-            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+        $pdo = new PDO("sqlite:{$db_file}", null, null, [
+            PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
             PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-            PDO::ATTR_TIMEOUT => 5
+            PDO::ATTR_TIMEOUT            => 5,
         ]);
-        
         $pdo->exec("PRAGMA journal_mode=WAL");
         $pdo->exec("PRAGMA foreign_keys=ON");
+        $isPostgres = false;
+    } catch (PDOException $sqliteErr) {
+        // Both failed — show the original Supabase error (more useful)
+        header('Content-Type: text/html; charset=utf-8');
+        ?>
+        <!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Database Connection Required</title>
+        <style>
+          body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:#f4f6f9;color:#333;padding:2rem;display:flex;align-items:center;justify-content:center;min-height:80vh}
+          .card{background:#fff;padding:2.5rem;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08);max-width:640px;width:100%;border-top:5px solid #d9534f}
+          h1{color:#d9534f;margin-top:0;font-size:1.6rem}p{line-height:1.6;color:#555}
+          code{background:#f1f5f9;padding:.2rem .4rem;border-radius:4px;font-size:.85rem;word-break:break-all}
+          a{color:#0d4b85}
+        </style></head><body><div class="card">
+        <h1>Database Connection Required</h1>
+        <p>Unable to connect to Supabase or local SQLite.</p>
+        <p><strong>Supabase error:</strong><br><code><?= htmlspecialchars($supabaseErr->getMessage()) ?></code></p>
+        <p><strong>SQLite error:</strong><br><code><?= htmlspecialchars($sqliteErr->getMessage()) ?></code></p>
+        <p>👉 <a href="https://supabase.com/dashboard" target="_blank">Check if your Supabase project is paused</a> and click <strong>Restore Project</strong>.</p>
+        </div></body></html>
+        <?php
+        exit;
     }
+}
 
-    $pkType = $isPostgres ? 'SERIAL PRIMARY KEY' : 'INTEGER PRIMARY KEY AUTOINCREMENT';
-    $dateTimeType = $isPostgres ? 'TIMESTAMP' : 'DATETIME';
+$pkType       = $isPostgres ? 'SERIAL PRIMARY KEY' : 'INTEGER PRIMARY KEY AUTOINCREMENT';
+$dateTimeType = $isPostgres ? 'TIMESTAMP'          : 'DATETIME';
+
+
 
     $pdo->exec("CREATE TABLE IF NOT EXISTS users (
         id $pkType,
