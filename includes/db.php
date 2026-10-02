@@ -405,33 +405,6 @@ $dateTimeType = $isPostgres ? 'TIMESTAMP'          : 'DATETIME';
         }
     }
 
-} catch (PDOException $e) {
-    header('Content-Type: text/html; charset=utf-8');
-    ?>
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Database Connection Required</title>
-        <style>
-            body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: #f4f6f9; color: #333; padding: 2rem; display: flex; align-items: center; justify-content: center; min-height: 80vh; }
-            .error-card { background: white; padding: 2.5rem; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); max-width: 600px; width: 100%; border-top: 5px solid #d9534f; }
-            h1 { color: #d9534f; margin-top: 0; font-size: 1.8rem; }
-            p { line-height: 1.6; color: #555; }
-        </style>
-    </head>
-    <body>
-        <div class="error-card">
-            <h1>Database Connection Required</h1>
-            <p>We are unable to connect to the database. Make sure your connection string is valid or local sqlite has write permissions.</p>
-            <p><strong>Error Message:</strong> <code><?php echo htmlspecialchars($e->getMessage()); ?></code></p>
-        </div>
-    </body>
-    </html>
-    <?php
-    exit;
-}
 
 /**
  * Uploads a local file to Vercel Blob Storage using the REST API.
