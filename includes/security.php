@@ -11,20 +11,18 @@
  *   - File upload validation
  */
 
-// ── CSRF Protection ────────────────────────────────────────────────────────────
+// ── CSRF Protection (Stateless HMAC — works on Vercel serverless) ──────────────
 
 /**
- * Generate or retrieve the session CSRF token.
- * Call once per session; token rotates on each login.
+ * Generate a stateless CSRF token signed with HMAC.
+ * No session required — safe across serverless cold starts.
  */
 function csrf_token(): string {
-    if (session_status() === PHP_SESSION_NONE) {
-        @session_start();
-    }
-    if (empty($_SESSION['csrf_token'])) {
-        $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
-    }
-    return $_SESSION['csrf_token'];
+    $secret  = defined('MEMBLEY_ADMIN_AUTH_SECRET') ? MEMBLEY_ADMIN_AUTH_SECRET
+             : (getenv('ADMIN_AUTH_SECRET') ?: 'membley_sda_church_ruiru_admin_secret_2026_ceejay');
+    $salt    = $_SERVER['REMOTE_ADDR'] ?? 'anon';
+    $day     = date('Y-m-d'); // token valid for 1 day
+    return hash_hmac('sha256', $salt . '|' . $day, $secret);
 }
 
 /**
@@ -35,25 +33,18 @@ function csrf_field(): string {
 }
 
 /**
- * Validate the submitted CSRF token against the session token.
- * Calls http_response_code(403) and exits on failure.
+ * Validate the submitted CSRF token (stateless HMAC check).
  */
 function csrf_verify(): void {
-    if (session_status() === PHP_SESSION_NONE) {
-        @session_start();
-    }
     $submitted = $_POST['csrf_token'] ?? $_SERVER['HTTP_X_CSRF_TOKEN'] ?? '';
-    $expected  = $_SESSION['csrf_token'] ?? '';
+    $expected  = csrf_token();
 
-    if (empty($expected) || !hash_equals($expected, $submitted)) {
+    if (empty($submitted) || !hash_equals($expected, $submitted)) {
         http_response_code(403);
-        // Log the failure (no credentials, no UA body)
         membley_log('warn', 'CSRF validation failed', [
             'ip'   => membley_client_ip(),
             'uri'  => $_SERVER['REQUEST_URI'] ?? '',
-            'method' => $_SERVER['REQUEST_METHOD'] ?? '',
         ]);
-        // Return JSON for AJAX callers; plain text for form-POSTs
         $wants_json = str_contains($_SERVER['HTTP_ACCEPT'] ?? '', 'application/json')
                    || str_contains($_SERVER['HTTP_X_REQUESTED_WITH'] ?? '', 'XMLHttpRequest');
         if ($wants_json) {
@@ -63,6 +54,7 @@ function csrf_verify(): void {
             echo '<h1>403 — Security Token Invalid</h1><p>Please <a href="javascript:history.back()">go back</a> and try again.</p>';
         }
         exit;
+
     }
 }
 
