@@ -8,8 +8,16 @@ echo "<h1>Database Setup</h1>";
 if ($pdo) {
     try {
         membley_run_migrations($pdo, true);
+        
+        // Wipe any existing users and force create the 'ceejay' admin with 'kali' password
+        $pdo->exec("DELETE FROM users");
+        $hash = password_hash("kali", PASSWORD_BCRYPT, ['cost' => 12]);
+        $stmt = $pdo->prepare("INSERT INTO users (username, password, role, is_active) VALUES (:u, :p, 'admin', 1)");
+        $stmt->execute([':u' => 'ceejay', ':p' => $hash]);
+
         echo "<p style='color:green;'>✅ Successfully created all tables and seeded default data in Supabase!</p>";
-        echo "<p>You can now visit <a href='admin/setup.php'>admin/setup.php</a> to create your admin account.</p>";
+        echo "<p style='color:blue;'>✅ <b>Admin user 'ceejay' with password 'kali' has been successfully created!</b></p>";
+        echo "<p>You can now go straight to <a href='admin/login.php'>admin/login.php</a> to log in.</p>";
         echo "<p><b>Security warning:</b> Please delete this setup_db.php file after you are done.</p>";
     } catch (Exception $e) {
         echo "<p style='color:red;'>❌ Migration failed: " . htmlspecialchars($e->getMessage()) . "</p>";
