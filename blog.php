@@ -3,10 +3,12 @@ require_once 'includes/db.php';
 require_once 'includes/header.php';
 
 $blogs = [];
+$db_error = false;
 try {
     $stmt = $pdo->query("SELECT * FROM blogs WHERE status = 'published' ORDER BY created_at DESC");
     $blogs = $stmt->fetchAll();
 } catch (PDOException $e) {
+    $db_error = true;
 }
 ?>
 
@@ -16,7 +18,15 @@ try {
         <h2 class="section-title">Latest Blog Posts</h2>
     </div>
 
-    <?php if (empty($blogs)): ?>
+    <?php if ($db_error): ?>
+        <div style="text-align: center; max-width: 600px; margin: 0 auto; padding: 4rem 2rem; background-color: var(--bg-white); border-radius: 12px; box-shadow: var(--shadow-sm); border: 1px solid var(--border-color);">
+            <i class="fa-solid fa-triangle-exclamation" style="font-size: 3rem; color: var(--accent); margin-bottom: 1.5rem;"></i>
+            <h2 style="color: var(--primary); font-size: 2rem; margin-bottom: 1rem;">Database Not Ready</h2>
+            <p style="color: var(--text-muted); font-size: 1.1rem; margin-bottom: 2rem;">
+                The blog database needs to be initialized. Please visit <a href="/setup_db.php">/setup_db.php</a> to set it up.
+            </p>
+        </div>
+    <?php elseif (empty($blogs)): ?>
         <div style="text-align: center; max-width: 600px; margin: 0 auto; padding: 4rem 2rem; background-color: var(--bg-white); border-radius: 12px; box-shadow: var(--shadow-sm); border: 1px solid var(--border-color);">
             <i class="fa-solid fa-pen-nib" style="font-size: 3rem; color: var(--accent); margin-bottom: 1.5rem;"></i>
             <h2 style="color: var(--primary); font-size: 2rem; margin-bottom: 1rem;">No Blogs Yet!</h2>

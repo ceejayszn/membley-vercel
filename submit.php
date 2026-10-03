@@ -274,4 +274,34 @@ require_once 'includes/header.php';
     </div>
 </section>
 
+<!-- Developer Support Card -->
+<section style="padding: 2rem 0 0 0;">
+    <div class="container">
+        <div style="max-width: 800px; margin: 0 auto;">
+            <div style="background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%); border-radius: 12px; padding: 1.5rem 2rem; display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap; box-shadow: 0 4px 20px rgba(0,47,93,0.3);">
+                <div style="width: 52px; height: 52px; background: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                    <i class="fa-solid fa-code" style="color: white; font-size: 1.3rem;"></i>
+                </div>
+                <div style="flex: 1;">
+                    <p style="color: rgba(255,255,255,0.6); font-size: 0.75rem; margin: 0 0 0.2rem 0; text-transform: uppercase; letter-spacing: 0.05em;">Platform Developer</p>
+                    <p style="color: #ffffff; font-weight: 700; font-size: 1rem; margin: 0 0 0.2rem 0;">Collins Mutai</p>
+                    <p style="color: rgba(255,255,255,0.7); font-size: 0.85rem; margin: 0;">In case of a submission error or technical issue, please reach out directly:</p>
+                </div>
+                <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+                    <a href="https://wa.me/254718901990?text=Hi%20Collins%2C%20I%20have%20an%20issue%20with%20the%20Membley%20site%20submission%20form."
+                       target="_blank"
+                       style="display: inline-flex; align-items: center; gap: 0.5rem; background: #16a34a; color: white; padding: 0.6rem 1.2rem; border-radius: 50px; font-size: 0.85rem; font-weight: 600; text-decoration: none; transition: background 0.2s;">
+                        <i class="fa-brands fa-whatsapp" style="font-size: 1rem;"></i> WhatsApp
+                    </a>
+                    <a href="mailto:cheruyotcollo@gmail.com"
+                       style="display: inline-flex; align-items: center; gap: 0.5rem; background: rgba(255,255,255,0.15); color: white; padding: 0.6rem 1.2rem; border-radius: 50px; font-size: 0.85rem; font-weight: 600; text-decoration: none; border: 1px solid rgba(255,255,255,0.3); transition: background 0.2s;">
+                        <i class="fa-solid fa-envelope" style="font-size: 0.9rem;"></i> Email
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
 <?php require_once 'includes/footer.php'; ?>
+
