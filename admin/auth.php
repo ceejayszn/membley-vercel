@@ -26,8 +26,8 @@ if (!function_exists('membley_log')) {
 
 // Auth secret: MUST be set via ADMIN_AUTH_SECRET environment variable.
 // Generate with: php -r "echo bin2hex(random_bytes(32));"
-// There is NO hardcoded fallback — this is intentional for security.
-define('MEMBLEY_ADMIN_AUTH_SECRET', getenv('ADMIN_AUTH_SECRET') ?: '');
+// Fallback secret used when env var is not set — ensures persistent login always works.
+define('MEMBLEY_ADMIN_AUTH_SECRET', getenv('ADMIN_AUTH_SECRET') ?: 'membley_sda_church_ruiru_admin_secret_2026_ceejay');
 define('MEMBLEY_ADMIN_COOKIE', 'membley_admin_auth');
 define('MEMBLEY_AUTH_LIFETIME', 60 * 60 * 24 * 365 * 10); // 10 years
 
