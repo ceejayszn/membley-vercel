@@ -41,8 +41,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username = trim($_POST['username'] ?? '');
     $password = $_POST['password'] ?? '';
 
-    if (empty($username) || empty($password)) {
-        $error = 'Please enter your username and password.';
+    if (empty($password)) {
+        $error = 'Please enter your password.';
     } else {
         $authenticated = false;
         $auth_user     = '';
@@ -139,11 +139,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         <form action="login.php<?php echo !empty($_GET['redirect']) ? '?redirect=' . urlencode($_GET['redirect']) : ''; ?>" method="POST">
             <?php echo csrf_field(); ?>
-            <div class="admin-form-group">
+            <div class="admin-form-group" style="display:none;">
                 <label class="admin-label" for="username">Username</label>
                 <input type="text" id="username" name="username" class="admin-input"
-                       placeholder="Enter username" required autofocus autocomplete="username"
-                       value="<?php echo htmlspecialchars($_POST['username'] ?? '', ENT_QUOTES, 'UTF-8'); ?>">
+                       value="ceejay" required autocomplete="username">
             </div>
             <div class="admin-form-group" style="margin-bottom:2rem;">
                 <label class="admin-label" for="password">Password</label>

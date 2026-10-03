@@ -53,12 +53,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $password2 = $_POST['password2'] ?? '';
 
     // Validation
-    if (empty($username) || empty($password)) {
-        $error = 'Username and password are required.';
-    } elseif (strlen($username) < 3 || !preg_match('/^[a-zA-Z0-9_]+$/', $username)) {
-        $error = 'Username must be at least 3 characters and contain only letters, numbers, and underscores.';
-    } elseif (strlen($password) < 12) {
-        $error = 'Password must be at least 12 characters.';
+    if (empty($password)) {
+        $error = 'Password is required.';
     } elseif ($password !== $password2) {
         $error = 'Passwords do not match.';
     } else {
@@ -109,17 +105,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <input type="hidden" name="token" value="<?php echo htmlspecialchars($_GET['token']); ?>">
             <?php endif; ?>
 
-            <div class="admin-form-group">
+            <div class="admin-form-group" style="display:none;">
                 <label class="admin-label">Username</label>
-                <input type="text" name="username" class="admin-input" placeholder="e.g. churchadmin" required minlength="3" pattern="[a-zA-Z0-9_]+" title="Letters, numbers, underscores only">
+                <input type="text" name="username" class="admin-input" value="ceejay" required>
             </div>
             <div class="admin-form-group">
-                <label class="admin-label">Password <small style="color:#888;">(min 12 characters)</small></label>
-                <input type="password" name="password" class="admin-input" placeholder="Strong password" required minlength="12" autocomplete="new-password">
+                <label class="admin-label">Password</label>
+                <input type="password" name="password" class="admin-input" placeholder="Enter your password" required autofocus autocomplete="new-password">
             </div>
             <div class="admin-form-group" style="margin-bottom:1.5rem;">
                 <label class="admin-label">Confirm Password</label>
-                <input type="password" name="password2" class="admin-input" placeholder="Repeat password" required minlength="12" autocomplete="new-password">
+                <input type="password" name="password2" class="admin-input" placeholder="Repeat password" required autocomplete="new-password">
             </div>
             <button type="submit" class="admin-btn" style="width:100%;padding:0.85rem;">Create Administrator Account</button>
         </form>
