@@ -196,7 +196,7 @@ if ($pdo === null) {
 // Full migrations live in migrate.php — this just ensures tables exist
 // so fresh SQLite installs work out of the box.
 // On PostgreSQL, migrations should be run separately via migrate.php.
-if (!$isPostgres && $pdo) {
+if ($pdo) {
     require_once __DIR__ . '/migrate.php';
     membley_run_migrations($pdo, false); // false = skip seeding on normal requests
 }

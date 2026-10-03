@@ -19,6 +19,8 @@ includes/church.db
 *.db
 *.sqlite
 /tmp/
+sqlite/
+sqlite.zip
 
 # Logs
 *.log
