@@ -1,8 +1,32 @@
-# Database files
-includes/church.db
-*.db
-*.sqlite
-
 # OS files
 .DS_Store
 Thumbs.db
+
+# Node
+node_modules/
+next-env.d.ts
+.next/
+
+# Environment files with secrets — NEVER commit these
+.env
+.env.local
+.env.production
+.env.staging
+vercel.env
+
+# Database files — use migration scripts instead
+includes/church.db
+*.db
+*.sqlite
+/tmp/
+
+# Logs
+*.log
+logs/
+
+# Composer vendor (install via: composer install)
+vendor/
+
+# Build artifacts
+*.min.css.map
+*.min.js.map
