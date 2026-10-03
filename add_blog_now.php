@@ -7,7 +7,7 @@ if (!$pdo) {
 
 $title = "Christian, Yet Not Christlike";
 $slug = "christian-yet-not-christlike-" . time();
-$category = "Sermons";
+$category = "Youth";
 $excerpt = "There is something unsettling about becoming so familiar with the things of God that they no longer move us...";
 $author = "ceejay";
 $content = <<<HTML
