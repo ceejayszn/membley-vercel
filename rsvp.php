@@ -1,5 +1,6 @@
 <?php
 require_once 'includes/db.php';
+require_once 'includes/security.php';
 require_once 'includes/header.php';
 
 $event_title = "Homecoming Sabbath (10 Yrs Celebration)";
@@ -105,13 +106,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_rsvp'])) {
             $church_from = "Membley SDA Church";
         }
 
-        $ip = $_SERVER['REMOTE_ADDR'] ?? 'Unknown';
-        if (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
-            $ip = explode(',', $_SERVER['HTTP_X_FORWARDED_FOR'])[0];
-        } elseif (!empty($_SERVER['HTTP_CLIENT_IP'])) {
-            $ip = $_SERVER['HTTP_CLIENT_IP'];
-        }
-        $ip = trim($ip);
+        $ip = membley_client_ip();
 
         $user_agent = $_SERVER['HTTP_USER_AGENT'] ?? 'Unknown';
         $device_info = detect_device_details($user_agent);
@@ -138,35 +133,42 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_rsvp'])) {
             $notes_text = (!empty($notes_text) ? $notes_text . " | " : "") . "[Group Members: " . $names_list . "]";
         }
 
-        try {
-            $stmt = $pdo->prepare("INSERT INTO event_rsvps 
-                (event_id, event_title, full_name, is_membley_member, church_from, phone, attendees_count, inquiry, ip_address, device_type, phone_model, browser, os, location, network_isp, user_agent)
-                VALUES 
-                (:event_id, :event_title, :full_name, :is_member, :church, :phone, :attendees, :inquiry, :ip, :device_type, :phone_model, :browser, :os, :location, :isp, :ua)");
-            
-            $stmt->execute([
-                ':event_id'     => 1,
-                ':event_title'  => $event_title,
-                ':full_name'    => $full_name,
-                ':is_member'    => $is_membley_member,
-                ':church'       => !empty($church_from) ? $church_from : 'Visitor',
-                ':phone'        => $phone,
-                ':attendees'    => max(1, $attendees_count),
-                ':inquiry'      => $notes_text,
-                ':ip'           => $ip,
-                ':device_type'  => $device_info['device_type'],
-                ':phone_model'  => $device_info['phone_model'],
-                ':browser'      => $device_info['browser'],
-                ':os'           => $device_info['os'],
-                ':location'     => $location,
-                ':isp'          => $network_isp,
-                ':ua'           => $user_agent
-            ]);
+        // Rate limit: 3 RSVPs per IP per 10 minutes to prevent spam
+        if (!rate_limit_check($pdo, 'rsvp', $ip, 3, 600)) {
+            $error_msg = 'Too many submissions from your device. Please wait a few minutes and try again.';
+        } else {
+            try {
+                $stmt = $pdo->prepare("INSERT INTO event_rsvps
+                    (event_id, event_title, full_name, is_membley_member, church_from, phone, attendees_count, inquiry, ip_address, device_type, phone_model, browser, os, location, network_isp, user_agent)
+                    VALUES
+                    (:event_id, :event_title, :full_name, :is_member, :church, :phone, :attendees, :inquiry, :ip, :device_type, :phone_model, :browser, :os, :location, :isp, :ua)");
 
-            $submitted = true;
-            $registered_name = $full_name;
-        } catch (PDOException $e) {
-            $error_msg = "Database error: " . $e->getMessage();
+                $stmt->execute([
+                    ':event_id'    => 1,
+                    ':event_title' => $event_title,
+                    ':full_name'   => $full_name,
+                    ':is_member'   => $is_membley_member,
+                    ':church'      => !empty($church_from) ? $church_from : 'Visitor',
+                    ':phone'       => $phone,
+                    ':attendees'   => max(1, $attendees_count),
+                    ':inquiry'     => $notes_text,
+                    ':ip'          => $ip,
+                    ':device_type' => $device_info['device_type'],
+                    ':phone_model' => $device_info['phone_model'],
+                    ':browser'     => $device_info['browser'],
+                    ':os'          => $device_info['os'],
+                    ':location'    => $location,
+                    ':isp'         => $network_isp,
+                    ':ua'          => $user_agent,
+                ]);
+
+                $submitted = true;
+                $registered_name = $full_name;
+
+            } catch (PDOException $e) {
+                membley_log('error', 'RSVP insert failed: ' . $e->getMessage(), ['ip' => $ip]);
+                $error_msg = 'We could not save your registration at this time. Please try again shortly.';
+            }
         }
     }
 }
@@ -258,6 +260,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_rsvp'])) {
             </div>
 
                         <form action="rsvp.php" method="POST" id="mainRsvpForm">
+                    <?php echo csrf_field(); ?>
                 
                                 <div class="form-group">
                     <label class="form-label" for="full_name">Your Full Name <span style="color: #e11d48;">*</span></label>

@@ -1,15 +1,107 @@
 <?php
-// ============================================================
-// DB DIAGNOSTIC PAGE — remove after debugging is complete
-// Access at: https://your-site.vercel.app/dbcheck.php
-// ============================================================
-
-// Simple secret key to prevent public access
-$key = $_GET['key'] ?? '';
-if ($key !== 'membley2026') {
+/**
+ * dbcheck.php — Admin-only DB and connectivity diagnostic.
+ * NEVER exposes credentials, passwords, or full connection strings.
+ * Requires admin authentication.
+ */
+require_once 'admin/auth.php';
+if (!is_admin_logged_in()) {
     http_response_code(403);
-    die('403 Forbidden. Append ?key=membley2026 to the URL.');
+    die('403 — Access Denied. Please <a href="/admin/login.php">log in</a> first.');
 }
+
+header('Content-Type: text/html; charset=utf-8');
+require_once 'includes/db.php';
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>DB Diagnostic — Membley Admin</title>
+<style>
+  body { font-family: monospace; background: #1a1a2e; color: #e0e0e0; padding: 2rem; }
+  h2 { color: #d99e1a; border-bottom: 1px solid #444; padding-bottom: .5rem; }
+  .ok  { color: #4ade80; font-weight: bold; }
+  .err { color: #f87171; font-weight: bold; }
+  .warn{ color: #fbbf24; }
+  table { width: 100%; border-collapse: collapse; margin-bottom: 2rem; }
+  td, th { padding: .4rem .8rem; border: 1px solid #333; text-align: left; font-size: .85rem; }
+  th { background: #002f5d; color: #d99e1a; }
+  tr:nth-child(even) { background: #111827; }
+  pre { background: #0f172a; padding: 1rem; border-radius: 6px; overflow-x: auto; font-size: .8rem; }
+</style>
+</head>
+<body>
+
+<h2>🔍 Environment Variables (Presence Check — values hidden)</h2>
+<table>
+<tr><th>Variable</th><th>Status</th></tr>
+<?php
+$dbVars = ['DATABASE_URL','POSTGRES_URL','SUPABASE_DB_URL',
+           'SUPABASE_PROJECT_REF','SUPABASE_DB_PASSWORD','SUPABASE_POOLER_HOST',
+           'ADMIN_AUTH_SECRET','BLOB_READ_WRITE_TOKEN','APP_ENV'];
+
+foreach ($dbVars as $var) {
+    $val    = getenv($var) ?: ($_ENV[$var] ?? ($_SERVER[$var] ?? null));
+    $status = $val
+        ? '<span class="ok">✓ SET</span>'
+        : '<span class="warn">— not set</span>';
+    // Never display the actual value
+    echo "<tr><td>$var</td><td>$status</td></tr>\n";
+}
+?>
+</table>
+
+<h2>🗄️ Database Connection</h2>
+<?php
+global $pdo, $isPostgres;
+if ($pdo) {
+    $driver = $isPostgres ? 'PostgreSQL (Supabase)' : 'SQLite (fallback)';
+    echo '<p class="' . ($isPostgres ? 'ok' : 'warn') . '">✅ Connected via: ' . htmlspecialchars($driver) . '</p>';
+
+    try {
+        $tables = [];
+        if ($isPostgres) {
+            $res = $pdo->query("SELECT tablename FROM pg_tables WHERE schemaname='public' ORDER BY tablename");
+        } else {
+            $res = $pdo->query("SELECT name FROM sqlite_master WHERE type='table' ORDER BY name");
+        }
+        foreach ($res->fetchAll() as $row) {
+            $tables[] = $isPostgres ? $row['tablename'] : $row['name'];
+        }
+        echo '<p>Tables found (' . count($tables) . '): <strong>' . implode(', ', array_map('htmlspecialchars', $tables)) . '</strong></p>';
+    } catch (PDOException $e) {
+        echo '<p class="err">Could not list tables.</p>';
+    }
+} else {
+    echo '<p class="err">❌ No database connection.</p>';
+}
+?>
+
+<h2>📊 Row Counts</h2>
+<table>
+<tr><th>Table</th><th>Rows</th></tr>
+<?php
+$countTables = ['blogs','events','event_rsvps','submissions','content_submissions',
+                'blog_comments','blog_likes','analytics','visitor_tracking',
+                'rate_limits','audit_log','users'];
+if ($pdo) {
+    foreach ($countTables as $t) {
+        try {
+            $n = $pdo->query("SELECT COUNT(*) FROM $t")->fetchColumn();
+            echo "<tr><td>$t</td><td>$n</td></tr>\n";
+        } catch (PDOException $e) {
+            echo "<tr><td>$t</td><td class='warn'>N/A</td></tr>\n";
+        }
+    }
+}
+?>
+</table>
+
+<p><a href="/admin/dashboard.php" style="color:#d99e1a;">← Back to Dashboard</a></p>
+</body>
+</html>
+
 
 header('Content-Type: text/html; charset=utf-8');
 ?>

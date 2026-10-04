@@ -3,6 +3,7 @@ require_once 'auth.php';
 check_auth();
 
 require_once '../includes/db.php';
+require_once '../includes/security.php';
 
 $action = isset($_GET['action']) ? $_GET['action'] : '';
 $id = isset($_GET['id']) ? intval($_GET['id']) : 0;
@@ -14,18 +15,23 @@ function generateSlug($string) {
     return strtolower(trim(preg_replace('/[^A-Za-z0-9-]+/', '-', $string), '-'));
 }
 
-if ($action == 'delete' && $id > 0) {
+// Delete must be POST with CSRF to prevent CSRF-via-link attacks
+if ($action == 'delete' && $id > 0 && $_SERVER['REQUEST_METHOD'] === 'POST') {
+    csrf_verify();
     try {
         $stmt = $pdo->prepare("DELETE FROM blogs WHERE id = :id");
         $stmt->execute([':id' => $id]);
+        audit_log('delete_blog', 'blogs', $id);
         header('Location: blogs.php?msg=deleted');
         exit;
     } catch (PDOException $e) {
-        $error = 'Failed to delete blog post.';
+        membley_log('error', 'Blog delete failed: ' . $e->getMessage(), ['id' => $id]);
+        $error = 'Failed to delete blog post. Please try again.';
     }
 }
 
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && $action !== 'delete') {
+    csrf_verify();
     $title = trim($_POST['title'] ?? '');
     $category = trim($_POST['category'] ?? 'General');
     $excerpt = trim($_POST['excerpt'] ?? '');
@@ -37,18 +43,23 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     $upload_error = '';
     if (isset($_FILES['cover_image']) && $_FILES['cover_image']['error'] == UPLOAD_ERR_OK) {
-        $allowed_types = ['image/jpeg', 'image/png', 'image/webp'];
-        $file_type = mime_content_type($_FILES['cover_image']['tmp_name']);
-        if (in_array($file_type, $allowed_types) && $_FILES['cover_image']['size'] <= 5000000) {
+        $validation = validate_upload(
+            $_FILES['cover_image'],
+            ['jpg','jpeg','png','webp'],
+            ['image/jpeg','image/png','image/webp'],
+            5242880 // 5MB
+        );
+        if ($validation['ok']) {
             try {
-                $ext = pathinfo($_FILES['cover_image']['name'], PATHINFO_EXTENSION);
-                $new_filename = 'blogs/' . uniqid('blog_') . '.' . $ext;
+                $ext = $validation['ext'];
+                $new_filename = 'blogs/' . bin2hex(random_bytes(8)) . '.' . $ext;
                 $image_url = uploadToVercelBlob($_FILES['cover_image']['tmp_name'], $new_filename);
             } catch (Exception $e) {
-                $upload_error = 'Blob upload failed: ' . $e->getMessage();
+                membley_log('error', 'Blog image upload failed: ' . $e->getMessage());
+                $upload_error = 'Image upload failed. Please use the URL field instead.';
             }
         } else {
-            $upload_error = 'Invalid image file or file too large (Max 5MB).';
+            $upload_error = $validation['error'];
         }
     }
 
@@ -60,7 +71,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $error = 'Please fill in Title, Excerpt, and Content.';
     } else {
         $slug = generateSlug($title);
-        
+
         if ($action == 'add') {
             try {
                 $check = $pdo->prepare("SELECT COUNT(*) FROM blogs WHERE slug = :slug");
@@ -71,37 +82,41 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
                 $stmt = $pdo->prepare("INSERT INTO blogs (title, slug, content, excerpt, image_url, video_url, author_name, category) VALUES (:title, :slug, :content, :excerpt, :image_url, :video_url, :author_name, :category)");
                 $stmt->execute([
-                    ':title' => $title,
-                    ':slug' => $slug,
-                    ':content' => $content,
-                    ':excerpt' => $excerpt,
-                    ':image_url' => $image_url,
-                    ':video_url' => $video_url,
+                    ':title'       => $title,
+                    ':slug'        => $slug,
+                    ':content'     => $content,
+                    ':excerpt'     => $excerpt,
+                    ':image_url'   => $image_url,
+                    ':video_url'   => $video_url,
                     ':author_name' => $author_name,
-                    ':category' => $category
+                    ':category'    => $category,
                 ]);
+                audit_log('create_blog', 'blogs', (int)$pdo->lastInsertId(), $title);
                 header('Location: blogs.php?msg=added');
                 exit;
             } catch (PDOException $e) {
-                $error = 'Failed to add blog post: ' . $e->getMessage();
+                membley_log('error', 'Blog create failed: ' . $e->getMessage());
+                $error = 'Failed to create blog post. Please try again.';
             }
         } elseif ($action == 'edit' && $id > 0) {
             try {
                 $stmt = $pdo->prepare("UPDATE blogs SET title = :title, content = :content, excerpt = :excerpt, image_url = :image_url, video_url = :video_url, author_name = :author_name, category = :category WHERE id = :id");
                 $stmt->execute([
-                    ':title' => $title,
-                    ':content' => $content,
-                    ':excerpt' => $excerpt,
-                    ':image_url' => $image_url,
-                    ':video_url' => $video_url,
+                    ':title'       => $title,
+                    ':content'     => $content,
+                    ':excerpt'     => $excerpt,
+                    ':image_url'   => $image_url,
+                    ':video_url'   => $video_url,
                     ':author_name' => $author_name,
-                    ':category' => $category,
-                    ':id' => $id
+                    ':category'    => $category,
+                    ':id'          => $id,
                 ]);
+                audit_log('update_blog', 'blogs', $id, $title);
                 header('Location: blogs.php?msg=updated');
                 exit;
             } catch (PDOException $e) {
-                $error = 'Failed to update blog post: ' . $e->getMessage();
+                membley_log('error', 'Blog update failed: ' . $e->getMessage(), ['id' => $id]);
+                $error = 'Failed to update blog post. Please try again.';
             }
         }
     }
@@ -196,6 +211,7 @@ if ($msg == 'deleted') $success = 'Blog post deleted successfully.';
 
                                 <?php if ($action == 'add' || $action == 'edit'): ?>
                     <form action="blogs.php?action=<?php echo $action; ?><?php echo ($action == 'edit') ? '&id='.$id : ''; ?>" method="POST" class="admin-form" enctype="multipart/form-data">
+                        <?php echo csrf_field(); ?>
                         <div class="admin-form-group" style="display: grid; grid-template-columns: 2fr 1fr; gap: 1rem;">
                             <div>
                                 <label class="admin-label" for="title">Post Title *</label>
@@ -276,7 +292,10 @@ if ($msg == 'deleted') $success = 'Blog post deleted successfully.';
                                                 <td><span style="font-size: 0.85rem; color: #555;"><?php echo htmlspecialchars($b['excerpt']); ?></span></td>
                                                 <td style="text-align: right;">
                                                     <a href="blogs.php?action=edit&id=<?php echo $b['id']; ?>" class="btn-sm btn-edit"><i class="fa-regular fa-pen-to-square"></i> Edit</a>
-                                                    <a href="blogs.php?action=delete&id=<?php echo $b['id']; ?>" class="btn-sm btn-delete" onclick="return confirm('Are you sure you want to delete this post?');"><i class="fa-regular fa-trash-can"></i> Delete</a>
+                                                    <form method="POST" action="blogs.php?action=delete&id=<?php echo $b['id']; ?>" style="display:inline;" onsubmit="return confirm('Delete this post permanently?');">
+                                                        <?php echo csrf_field(); ?>
+                                                        <button type="submit" class="btn-sm btn-delete"><i class="fa-regular fa-trash-can"></i> Delete</button>
+                                                    </form>
                                                 </td>
                                             </tr>
                                         <?php endforeach; ?>

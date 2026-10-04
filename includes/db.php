@@ -192,13 +192,40 @@ if ($pdo === null) {
     }
 }
 
-// ── Ensure schema is current (lightweight version check only) ─────────────────
-// Full migrations live in migrate.php — this just ensures tables exist
-// so fresh SQLite installs work out of the box.
-// On PostgreSQL, migrations should be run separately via migrate.php.
+// ── Ensure schema is current ───────────────────────────────────────────────────
+// Migrations run only if the schema version doesn't match, avoiding the
+// overhead of running CREATE TABLE IF NOT EXISTS on every request.
+// On a cold start or new deployment, the version check is fast (~1ms).
 if ($pdo) {
-    require_once __DIR__ . '/migrate.php';
-    membley_run_migrations($pdo, false); // false = skip seeding on normal requests
+    try {
+        // Read the stored schema version (stored in analytics table as a sentinel)
+        $versionKey  = '__schema_version__';
+        $targetVersion = '7'; // Increment this when migrate.php adds new tables/columns
+
+        $vStmt = $pdo->prepare("SELECT views FROM analytics WHERE page = :p LIMIT 1");
+        $vStmt->execute([':p' => $versionKey]);
+        $storedVersion = $vStmt->fetchColumn();
+
+        if ($storedVersion !== $targetVersion) {
+            require_once __DIR__ . '/migrate.php';
+            membley_run_migrations($pdo, false);
+
+            // Record the new schema version
+            if ($isPostgres) {
+                $pdo->prepare("INSERT INTO analytics (page, views, clicks, time_spent) VALUES (:p, :v, 0, 0) ON CONFLICT (page) DO UPDATE SET views = :v")
+                    ->execute([':p' => $versionKey, ':v' => $targetVersion]);
+            } else {
+                $pdo->prepare("INSERT OR REPLACE INTO analytics (page, views, clicks, time_spent) VALUES (:p, :v, 0, 0)")
+                    ->execute([':p' => $versionKey, ':v' => $targetVersion]);
+            }
+        }
+    } catch (PDOException $migErr) {
+        // Non-fatal on normal requests — log and continue. The app can still serve content.
+        membley_log('warn', 'Schema version check failed: ' . $migErr->getMessage());
+        // If fresh install, run migrations regardless
+        require_once __DIR__ . '/migrate.php';
+        membley_run_migrations($pdo, false);
+    }
 }
 
 // ── Shared helper functions ────────────────────────────────────────────────────
